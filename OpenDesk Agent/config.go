@@ -1,0 +1,4 @@
+package main
+import ("encoding/json"; "os"; "path/filepath")
+type Config struct { Server string `json:"server"`; Heartbeat int `json:"heartbeat"`; RustDeskID string `json:"rustdesk_id"`; AddressBookAPIKey string `json:"address_book_api_key"`; AgentAPIKey string `json:"agent_api_key"`; AddressBookSync int `json:"address_book_sync"`; InventorySync int `json:"inventory_sync"` }
+func LoadConfig() Config { c:=Config{Server:"http://192.168.1.30:8088",Heartbeat:30,RustDeskID:"AUTO",AddressBookAPIKey:"RustDeskHubAddressBook2026",AgentAPIKey:"OpenDeskAgent2026",AddressBookSync:300,InventorySync:86400}; f,e:=os.Open(filepath.Join(AppDirectory(),"config.json")); if e!=nil{return c}; defer f.Close(); if json.NewDecoder(f).Decode(&c)!=nil{return c}; if c.Heartbeat<=0{c.Heartbeat=30}; if c.AddressBookSync<=0{c.AddressBookSync=300}; if c.InventorySync<=0{c.InventorySync=86400}; return c }

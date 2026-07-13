@@ -1,0 +1,9 @@
+{
+  "server": "http://192.168.1.30:8088",
+  "heartbeat": 30,
+  "rustdesk_id": "AUTO",
+  "address_book_api_key": "RustDeskHubAddressBook2026",
+  "agent_api_key": "OpenDeskAgent2026",
+  "address_book_sync": 300,
+  "inventory_sync": 86400
+}
