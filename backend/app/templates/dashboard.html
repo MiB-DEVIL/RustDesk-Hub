@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% block title %}Centre de supervision{% endblock %}
+{% block content %}
+
+<div class="dashboard-head">
+  <div>
+    <p class="eyebrow">SUPERVISION DU PARC</p>
+    <h1>Centre de supervision</h1>
+    <p class="muted">
+      Vue opérationnelle en temps réel — actualisation toutes les 5 secondes.
+    </p>
+  </div>
+
+  <div class="dashboard-head-actions">
+    <button class="btn secondary" type="button" onclick="toggleDashboardFullscreen()">
+      ⛶ Plein écran
+    </button>
+    <div class="live-pill" id="connection-state">
+      <span class="pulse-dot"></span>
+      <span>Connexion temps réel</span>
+    </div>
+  </div>
+</div>
+
+<div class="supervision-kpi-grid">
+  <article class="pro-stat-card">
+    <div class="pro-stat-top"><span>Santé du parc</span><span class="pro-icon">♥</span></div>
+    <strong id="stat-health">{{ snapshot.stats.fleet_health }} %</strong>
+    <small>score opérationnel global</small>
+  </article>
+
+  <article class="pro-stat-card success-card">
+    <div class="pro-stat-top"><span>En ligne</span><span class="pro-icon">●</span></div>
+    <strong id="stat-online">{{ snapshot.stats.online }}</strong>
+    <small>sur <span id="stat-clients">{{ snapshot.stats.clients }}</span> machines</small>
+  </article>
+
+  <article class="pro-stat-card danger-card">
+    <div class="pro-stat-top"><span>Hors ligne</span><span class="pro-icon">●</span></div>
+    <strong id="stat-offline">{{ snapshot.stats.offline }}</strong>
+    <small>machines à contrôler</small>
+  </article>
+
+  <article class="pro-stat-card warning-card">
+    <div class="pro-stat-top"><span>Alertes</span><span class="pro-icon">⚠</span></div>
+    <strong id="stat-warnings">{{ snapshot.stats.warnings }}</strong>
+    <small>points nécessitant une attention</small>
+  </article>
+
+  <article class="pro-stat-card">
+    <div class="pro-stat-top"><span>Inventaire</span><span class="pro-icon">▦</span></div>
+    <strong id="stat-inventory">{{ snapshot.stats.inventory_coverage }} %</strong>
+    <small>couverture du parc</small>
+  </article>
+
+  <article class="pro-stat-card">
+    <div class="pro-stat-top"><span>Réussite 24 h</span><span class="pro-icon">✓</span></div>
+    <strong id="stat-success-rate">{{ snapshot.stats.success_rate_24h }} %</strong>
+    <small><span id="stat-failed-24h">{{ snapshot.stats.failed_24h }}</span> échec(s)</small>
+  </article>
+</div>
+
+<div class="supervision-capacity-grid">
+  <section class="card capacity-card">
+    <div>
+      <span>Capacité disque</span>
+      <strong id="stat-disk-used">{{ snapshot.stats.disk_used_percent }} % utilisé</strong>
+    </div>
+    <div class="capacity-bar">
+      <span
+        id="disk-capacity-bar"
+        style="width: {{ snapshot.stats.disk_used_percent }}%"
+      ></span>
+    </div>
+    <small>
+      <span id="stat-disk-free">{{ snapshot.stats.disk_free_gb }}</span> Go libres
+      sur <span id="stat-disk-total">{{ snapshot.stats.disk_total_gb }}</span> Go
+    </small>
+  </section>
+
+  <section class="card capacity-card">
+    <div>
+      <span>Mémoire inventoriée</span>
+      <strong><span id="stat-ram">{{ snapshot.stats.ram_gb }}</span> Go</strong>
+    </div>
+    <p class="muted">
+      Total de RAM déclaré par les inventaires disponibles.
+    </p>
+  </section>
+</div>
+
+<div class="supervision-alert-grid">
+  <section class="card alert-panel">
+    <div class="panel-heading">
+      <div>
+        <p class="eyebrow">ALERTES PRIORITAIRES</p>
+        <h2>Machines à traiter</h2>
+      </div>
+      <a class="btn secondary small" href="/notifications">Notifications</a>
+    </div>
+
+    <div id="supervision-alert-list" class="supervision-alert-list">
+      {% for alert in snapshot.alerts.disk %}
+      <a href="/machines/{{ alert.client_id }}" class="supervision-alert danger">
+        <span>Disque critique</span>
+        <strong>{{ alert.machine }}</strong>
+        <small>{{ alert.used_percent }} % utilisé · {{ alert.free_gb }} Go libres</small>
+      </a>
+      {% endfor %}
+
+      {% for alert in snapshot.alerts.long_offline %}
+      <a href="/machines/{{ alert.client_id }}" class="supervision-alert danger">
+        <span>Hors ligne depuis plus de 24 h</span>
+        <strong>{{ alert.machine }}</strong>
+      </a>
+      {% endfor %}
+
+      {% for alert in snapshot.alerts.stale_inventory %}
+      <a href="/machines/{{ alert.client_id }}" class="supervision-alert warning">
+        <span>Inventaire obsolète ou absent</span>
+        <strong>{{ alert.machine }}</strong>
+      </a>
+      {% endfor %}
+
+      {% for alert in snapshot.alerts.missing_agent_version %}
+      <a href="/machines/{{ alert.client_id }}" class="supervision-alert warning">
+        <span>Version Agent absente</span>
+        <strong>{{ alert.machine }}</strong>
+      </a>
+      {% endfor %}
+
+      {% if not snapshot.alerts.disk
+         and not snapshot.alerts.long_offline
+         and not snapshot.alerts.stale_inventory
+         and not snapshot.alerts.missing_agent_version %}
+      <p class="empty">Aucune alerte prioritaire.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="card dashboard-panel fleet-panel">
+    <div class="panel-heading">
+      <div>
+        <p class="eyebrow">ÉTAT DU PARC</p>
+        <h2>Machines récentes</h2>
+      </div>
+      <a class="btn secondary small" href="/clients">Voir toutes</a>
+    </div>
+
+    <div class="machine-list" id="machine-list">
+      {% for client in snapshot.clients %}
+      <a class="machine-row" href="/machines/{{ client.id }}">
+        <div class="machine-avatar">{{ client.name[:1]|upper }}</div>
+        <div class="machine-main">
+          <strong>{{ client.name }}</strong>
+          <span>{{ client.hostname }} · {{ client.group_name }}</span>
+        </div>
+        <div class="machine-meta">
+          <span class="health-chip {{ client.health }}">{{ client.health_label }}</span>
+          <small>
+            RAM {{ client.ram_gb }} Go · Disque {{ client.disk_used_percent }} %
+          </small>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+<div class="dashboard-grid">
+  <section class="card dashboard-panel activity-panel">
+    <div class="panel-heading">
+      <div>
+        <p class="eyebrow">ACTIVITÉ LIVE</p>
+        <h2>Derniers événements</h2>
+      </div>
+      <a class="btn secondary small" href="/logs">Journal complet</a>
+    </div>
+
+    <div class="timeline" id="event-list">
+      {% for event in snapshot.events %}
+      <div class="timeline-item">
+        <span class="timeline-dot {{ event.level|lower }}"></span>
+        <div>
+          <div class="timeline-title">{{ event.hostname }} · {{ event.event_type }}</div>
+          <p>{{ event.message }}</p>
+          <small>{{ event.created_at }}</small>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="card dashboard-panel task-dashboard-panel">
+    <div class="panel-heading">
+      <div>
+        <p class="eyebrow">ACTION MANAGER</p>
+        <h2>Activité des tâches</h2>
+      </div>
+      <a class="btn secondary small" href="/tasks">Voir toutes</a>
+    </div>
+
+    <div class="dashboard-task-counters">
+      <a href="/tasks?status=pending">
+        <span>En attente</span>
+        <strong id="dashboard-task-pending">{{ snapshot.tasks.counters.pending }}</strong>
+      </a>
+      <a href="/tasks?status=running">
+        <span>En cours</span>
+        <strong id="dashboard-task-running">{{ snapshot.tasks.counters.running }}</strong>
+      </a>
+      <a href="/tasks?status=success">
+        <span>Succès</span>
+        <strong id="dashboard-task-success">{{ snapshot.tasks.counters.success }}</strong>
+      </a>
+      <a href="/tasks?status=failed">
+        <span>Échecs</span>
+        <strong id="dashboard-task-failed">{{ snapshot.tasks.counters.failed }}</strong>
+      </a>
+    </div>
+
+    <div class="dashboard-task-list" id="dashboard-task-list">
+      {% for task in snapshot.tasks.recent %}
+      <a href="/tasks/{{ task.uuid }}" class="dashboard-task-row">
+        <div>
+          <strong>{{ task.machine }}</strong>
+          <span>{{ task.action_type }}</span>
+        </div>
+        <div>
+          <span class="task-status task-{{ task.status }}">
+            {% if task.status == "pending" %}En attente
+            {% elif task.status == "running" %}En cours
+            {% elif task.status == "success" %}Succès
+            {% elif task.status == "cancelled" %}Annulée
+            {% else %}Échec{% endif %}
+          </span>
+          <small>{{ task.created_at }}</small>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+<script>
+function toggleDashboardFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+}
+</script>
+<script src="/static/dashboard.js"></script>
+{% endblock %}

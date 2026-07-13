@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Catalogue logiciel{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Catalogue logiciel du parc</h1>
+    <p class="muted">
+      Vue consolidée de tous les logiciels remontés par les Agents.
+    </p>
+  </div>
+
+  <a
+    class="btn"
+    href="/software/export.csv?search={{ search }}&publisher={{ selected_publisher }}"
+  >
+    ⬇ Export CSV
+  </a>
+</div>
+
+<div class="stats-grid software-stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Machines inventoriées</div>
+    <div class="stat-value">{{ machine_count }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Logiciels uniques</div>
+    <div class="stat-value">{{ unique_names }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Installations recensées</div>
+    <div class="stat-value">{{ total_installations }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Résultats affichés</div>
+    <div class="stat-value">{{ rows|length }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <form method="get" action="/software" class="filters software-filters">
+    <input
+      name="search"
+      value="{{ search }}"
+      placeholder="Logiciel, version, éditeur ou machine..."
+    >
+
+    <select name="publisher">
+      <option value="">Tous les éditeurs</option>
+      {% for publisher in publishers %}
+      <option
+        value="{{ publisher }}"
+        {% if selected_publisher == publisher %}selected{% endif %}
+      >
+        {{ publisher }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <button class="btn" type="submit">Filtrer</button>
+    <a class="btn secondary" href="/software">Réinitialiser</a>
+  </form>
+</div>
+
+<div class="card table-wrap">
+  <table>
+    <tr>
+      <th>Logiciel</th>
+      <th>Version</th>
+      <th>Éditeur</th>
+      <th>Architecture</th>
+      <th>Machines</th>
+      <th>Détail</th>
+    </tr>
+
+    {% for row in rows %}
+    <tr>
+      <td><strong>{{ row.name }}</strong></td>
+      <td>{{ row.version or "-" }}</td>
+      <td>{{ row.publisher or "-" }}</td>
+      <td>{{ row.architecture or "-" }}</td>
+      <td>
+        <span class="badge used">{{ row.machine_count }}</span>
+      </td>
+      <td>
+        <details class="software-machine-details">
+          <summary>Afficher</summary>
+          <div>
+            {% for machine in row.machines %}
+            <span>{{ machine }}</span>
+            {% endfor %}
+          </div>
+        </details>
+      </td>
+    </tr>
+    {% endfor %}
+
+    {% if not rows %}
+    <tr>
+      <td colspan="6" class="empty">
+        Aucun logiciel ne correspond aux filtres.
+      </td>
+    </tr>
+    {% endif %}
+  </table>
+</div>
+
+{% endblock %}

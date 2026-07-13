@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}
+Actions distantes
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+<div>
+<h1>Actions distantes</h1>
+
+<p class="muted">
+Wake-on-LAN depuis OpenDesk Hub
+</p>
+</div>
+
+</div>
+
+{% if sent %}
+<div class="card">
+<p>
+✅ Paquet Wake-on-LAN envoyé.
+</p>
+</div>
+{% endif %}
+
+{% if error == "mac" %}
+<div class="card">
+<p>
+❌ Impossible de réveiller cette machine :
+adresse MAC absente.
+</p>
+</div>
+{% elif error == "send" %}
+<div class="card">
+<p>
+❌ Échec de l’envoi Wake-on-LAN.
+Consulte le Journal.
+</p>
+</div>
+{% elif error == "client" %}
+<div class="card">
+<p>
+❌ Machine introuvable.
+</p>
+</div>
+{% endif %}
+
+<div class="card">
+
+<h2>Paramètres réseau</h2>
+
+<p class="muted">
+Le broadcast le plus courant est
+<code>255.255.255.255</code>.
+Sur certains réseaux, utilise le broadcast du sous-réseau,
+par exemple <code>192.168.1.255</code>.
+</p>
+
+</div>
+
+<form
+method="post"
+action="/actions/wake-selected"
+>
+
+<div class="card">
+
+<div class="filters">
+
+<input
+type="text"
+name="broadcast_address"
+value="255.255.255.255"
+placeholder="Adresse broadcast"
+>
+
+<input
+type="number"
+name="port"
+value="9"
+min="1"
+max="65535"
+>
+
+<button type="submit" class="btn">
+⚡ Réveiller la sélection
+</button>
+
+</div>
+
+</div>
+
+<div class="card table-wrap">
+
+<table>
+
+<tr>
+<th>Sélection</th>
+<th>État</th>
+<th>Nom</th>
+<th>Hostname</th>
+<th>IP</th>
+<th>MAC</th>
+<th>Action</th>
+</tr>
+
+{% for client, inventory in rows %}
+
+<tr>
+
+<td>
+{% if inventory and inventory.mac %}
+<input
+type="checkbox"
+name="client_ids"
+value="{{ client.id }}"
+>
+{% else %}
+-
+{% endif %}
+</td>
+
+<td>
+{% if client.online %}
+<span class="badge online">En ligne</span>
+{% else %}
+<span class="badge offline">Hors ligne</span>
+{% endif %}
+</td>
+
+<td>{{ client.name }}</td>
+
+<td>{{ client.hostname or "-" }}</td>
+
+<td>{{ client.ip or "-" }}</td>
+
+<td>
+{% if inventory %}
+{{ inventory.mac or "-" }}
+{% else %}
+-
+{% endif %}
+</td>
+
+<td>
+
+{% if inventory and inventory.mac %}
+
+<button
+type="submit"
+formaction="/actions/wake/{{ client.id }}"
+formmethod="post"
+class="btn small"
+>
+⚡ Réveiller
+</button>
+
+{% else %}
+
+<span class="muted">
+MAC indisponible
+</span>
+
+{% endif %}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+{% if not rows %}
+<tr>
+<td colspan="7" class="empty">
+Aucune machine.
+</td>
+</tr>
+{% endif %}
+
+</table>
+
+</div>
+
+</form>
+
+<div class="card">
+
+<h2>Pré-requis sur les PC</h2>
+
+<p class="muted">
+Le Wake-on-LAN doit être activé dans le BIOS/UEFI
+et dans les propriétés de la carte réseau Windows.
+Une connexion Ethernet fonctionne généralement mieux que le Wi-Fi.
+</p>
+
+</div>
+
+{% endblock %}

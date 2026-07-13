@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>
+{% block title %}
+OpenDesk Hub
+{% endblock %}
+</title>
+
+<link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body class="{% if request.session.get('user') and not request.session.get('is_admin') %}viewer-mode{% endif %}">
+
+<div class="layout">
+
+<aside class="sidebar">
+
+<div class="brand">
+OpenDesk Hub
+</div>
+
+<nav>
+<a href="/dashboard">🏠 Dashboard</a>
+<a href="/clients">🖥️ Clients</a>
+<a href="/groups">📁 Groupes</a>
+<a href="/address-book">📒 Carnet partagé</a>
+<a href="/inventory">📊 Inventaire</a>
+<a href="/software">💿 Logiciels</a>
+<a href="/update-compliance">🪟 Correctifs Windows</a>
+<a href="/administration">🛠️ Administration</a>
+<a href="/actions">⚡ Wake-on-LAN</a>
+<a href="/tasks">📋 Tâches</a>
+<a href="/diagnostic">🩺 Diagnostic</a>
+<a href="/logs">📜 Journal</a>
+<a href="/notifications" class="notification-link">🔔 Notifications <span id="notification-badge" class="notification-badge" hidden>0</span></a>
+{% if request.session.get("is_admin") %}
+<a href="/users">👥 Utilisateurs</a>
+<a href="/audit">🛡️ Audit</a>
+{% endif %}
+<a href="/settings">⚙️ Paramètres</a>
+<a href="/profile">👤 Mon profil</a>
+<a href="/logout">🚪 Déconnexion</a>
+</nav>
+
+</aside>
+
+<main class="content">
+
+{% if request.session.get("user") and not request.session.get("is_admin") %}
+<div class="viewer-banner">
+  🔒 Mode lecture seule — les modifications et actions distantes
+  sont bloquées côté serveur.
+</div>
+{% endif %}
+
+{% if request.query_params.get("error") == "read_only" %}
+<div class="card task-error-box">
+  Action refusée : ce compte est en lecture seule.
+</div>
+{% elif request.query_params.get("error") == "admin_required" %}
+<div class="card task-error-box">
+  Cette page est réservée aux administrateurs.
+</div>
+{% endif %}
+
+{% block content %}
+{% endblock %}
+
+</main>
+
+</div>
+
+<script src="/static/notifications.js"></script>
+
+<script>
+(function () {
+  if (!document.body.classList.contains("viewer-mode")) {
+    return;
+  }
+
+  document.querySelectorAll('form[method="post"], form[method="POST"]')
+    .forEach(function (form) {
+      if (form.classList.contains("profile-password-form")) {
+        return;
+      }
+
+      form.classList.add("viewer-disabled-action");
+      form.querySelectorAll("button, input, select, textarea")
+        .forEach(function (control) {
+          control.disabled = true;
+        });
+    });
+
+  document.querySelectorAll(
+    'a[href*="/delete/"], a[href$="/add"], a[href*="/edit/"]'
+  ).forEach(function (link) {
+    link.classList.add("viewer-disabled-link");
+    link.setAttribute("aria-disabled", "true");
+    link.addEventListener("click", function (event) {
+      event.preventDefault();
+    });
+  });
+})();
+</script>
+
+</body>
+
+</html>

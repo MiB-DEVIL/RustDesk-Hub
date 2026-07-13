@@ -1,0 +1,1138 @@
+*{box-sizing:border-box}body{margin:0;background:#0f1115;color:#e5e7eb;font-family:Arial,sans-serif}a{color:inherit;text-decoration:none}.layout{display:flex;min-height:100vh}.sidebar{width:240px;background:#151922;border-right:1px solid #252b36;padding:24px}.brand{font-size:22px;font-weight:bold;margin-bottom:35px}.sidebar nav{display:flex;flex-direction:column;gap:10px}.sidebar nav a{padding:12px 14px;border-radius:10px;color:#d1d5db}.sidebar nav a:hover{background:#252b36;color:white}.content{flex:1;padding:32px;overflow-x:auto}h1{margin:0 0 8px}h2{margin-top:0}.muted{color:#9ca3af}.card{background:#181c23;border:1px solid #252b36;border-radius:16px;padding:20px;margin-bottom:22px}.form-card{max-width:720px}.page-header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px}.stats-grid{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:18px;margin:24px 0}.stat-card{background:#181c23;border:1px solid #252b36;border-radius:16px;padding:22px;text-align:center}.stat-icon{font-size:28px}.stat-value{font-size:34px;font-weight:bold;margin-top:8px}.stat-label{color:#9ca3af}input,select,textarea{width:100%;border:1px solid #2f3745;border-radius:10px;background:#10141b;color:#e5e7eb;padding:12px;margin:8px 0 16px;font-size:14px}label{color:#d1d5db;font-weight:bold}.checkbox{display:flex;align-items:center;gap:10px}.checkbox input{width:auto;margin:0}.btn{display:inline-block;border:none;border-radius:10px;background:#2563eb;color:white;padding:11px 16px;cursor:pointer;font-weight:bold}.btn:hover{opacity:.9}.btn.secondary{background:#374151}.btn.danger{background:#dc2626}.btn.small{padding:7px 10px;font-size:13px}.btn.full{width:100%}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}.filters{display:grid;grid-template-columns:minmax(220px,1fr) 220px auto auto;gap:12px;align-items:center}.filters input,.filters select{margin:0}.inline-form{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}.inline-form input{margin:0}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:850px}th{text-align:left;color:#9ca3af;font-size:13px;text-transform:uppercase;padding:12px;border-bottom:1px solid #2f3745}td{padding:12px;border-bottom:1px solid #252b36;vertical-align:middle}tr:hover td{background:#151922}.empty{text-align:center;color:#9ca3af;padding:24px}.row-actions{display:flex;gap:8px;flex-wrap:wrap}.badge{display:inline-block;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:bold}.badge.online{background:#064e3b;color:#6ee7b7}.badge.offline{background:#4b1113;color:#fca5a5}.badge.used{background:#374151;color:#d1d5db}.dot{display:inline-block;width:12px;height:12px;border-radius:50%}.dot.green{background:#22c55e}.dot.red{background:#ef4444}.login-body{display:flex;align-items:center;justify-content:center;min-height:100vh}.login-card{width:360px;background:#181c23;border:1px solid #252b36;border-radius:18px;padding:32px}@media(max-width:900px){.layout{flex-direction:column}.sidebar{width:100%}.stats-grid{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:1fr}}
+
+/* Dashboard Pro v0.9.3 */
+.dashboard-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px}.eyebrow{font-size:11px;letter-spacing:.14em;font-weight:800;color:#60a5fa;margin:0 0 8px}.live-pill{display:flex;align-items:center;gap:9px;border:1px solid #1f6f4a;background:#0d2a20;color:#86efac;padding:9px 13px;border-radius:999px;font-size:13px;font-weight:700}.live-pill.disconnected{border-color:#7f1d1d;background:#2c1517;color:#fca5a5}.pulse-dot{width:9px;height:9px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.55);animation:pulse 1.8s infinite}.disconnected .pulse-dot{background:#ef4444;animation:none}@keyframes pulse{70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}.pro-stats-grid{display:grid;grid-template-columns:repeat(4,minmax(190px,1fr));gap:18px;margin-bottom:22px}.pro-stat-card{position:relative;overflow:hidden;background:linear-gradient(145deg,#1a202a,#151922);border:1px solid #2a3240;border-radius:18px;padding:20px}.pro-stat-card:after{content:"";position:absolute;width:100px;height:100px;border-radius:50%;right:-45px;bottom:-55px;background:rgba(59,130,246,.12)}.pro-stat-card.success-card:after{background:rgba(34,197,94,.13)}.pro-stat-card.danger-card:after{background:rgba(239,68,68,.13)}.pro-stat-card.warning-card:after{background:rgba(245,158,11,.14)}.pro-stat-top{display:flex;justify-content:space-between;color:#aab3c1;font-size:13px;font-weight:700}.pro-stat-card strong{display:block;font-size:36px;margin:14px 0 4px}.pro-stat-card small{color:#7f8998}.pro-icon{font-size:18px}.success-card .pro-icon{color:#22c55e}.danger-card .pro-icon{color:#ef4444}.warning-card .pro-icon{color:#f59e0b}.dashboard-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(360px,.8fr);gap:22px}.dashboard-panel{margin:0;min-width:0}.panel-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}.panel-heading h2{margin:0}.machine-list{display:flex;flex-direction:column}.machine-row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:13px;padding:13px 4px;border-bottom:1px solid #252b36}.machine-row:last-child{border-bottom:0}.machine-row:hover{background:#151922;border-radius:12px;padding-left:10px;padding-right:10px}.machine-avatar{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:#26344b;color:#93c5fd;font-weight:800}.machine-main{min-width:0}.machine-main strong,.machine-main span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.machine-main span{font-size:12px;color:#8b95a5;margin-top:4px}.machine-meta{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:5px}.machine-meta small{color:#7f8998}.health-chip{padding:4px 9px;border-radius:999px;font-size:11px;font-weight:800}.health-chip.healthy{background:#0b3b2b;color:#6ee7b7}.health-chip.warning{background:#49320a;color:#fcd34d}.health-chip.critical{background:#4b1113;color:#fca5a5}.timeline{display:flex;flex-direction:column;max-height:520px;overflow:auto;padding-right:5px}.timeline-item{display:grid;grid-template-columns:12px minmax(0,1fr);gap:12px;padding:12px 0;border-bottom:1px solid #252b36}.timeline-item:last-child{border-bottom:0}.timeline-dot{width:10px;height:10px;border-radius:50%;margin-top:5px;background:#60a5fa}.timeline-dot.error{background:#ef4444}.timeline-dot.warning{background:#f59e0b}.timeline-dot.info{background:#22c55e}.timeline-title{font-size:13px;font-weight:800}.timeline-item p{margin:5px 0;color:#b5bdca;font-size:13px;line-height:1.45}.timeline-item small{color:#737d8c;font-size:11px}@media(max-width:1150px){.pro-stats-grid{grid-template-columns:repeat(2,minmax(180px,1fr))}.dashboard-grid{grid-template-columns:1fr}}@media(max-width:650px){.dashboard-head{flex-direction:column}.pro-stats-grid{grid-template-columns:1fr}.machine-row{grid-template-columns:42px minmax(0,1fr)}.machine-meta{grid-column:2;align-items:flex-start;text-align:left}}
+
+
+/* Notifications v0.9.3.1 */
+.notification-list { display: flex; flex-direction: column; gap: 12px; }
+.notification-item { display: flex; align-items: center; gap: 16px; padding: 16px; border: 1px solid rgba(255,255,255,.08); border-radius: 14px; background: rgba(255,255,255,.025); }
+.notification-critical { border-left: 4px solid #ef4444; }
+.notification-warning { border-left: 4px solid #f59e0b; }
+.notification-icon { font-size: 24px; width: 36px; text-align: center; }
+.notification-body { flex: 1; min-width: 0; }
+.notification-title { font-weight: 700; margin-bottom: 5px; }
+.notification-date { margin-top: 7px; font-size: 12px; opacity: .65; }
+.empty-state { text-align: center; padding: 48px 16px; }
+.empty-state-icon { font-size: 42px; margin-bottom: 10px; }
+@media (max-width: 760px) { .notification-item { align-items: flex-start; flex-wrap: wrap; } }
+
+
+/* v0.9.3.2 - compteur de notifications */
+.notification-link {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.notification-badge {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #d99a22;
+  color: #10151d;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 22px;
+  text-align: center;
+}
+
+.notification-badge.critical {
+  background: #ff5d67;
+  color: #ffffff;
+}
+
+
+/* OpenDesk Hub v0.9.4.0 - Centre d'administration */
+.admin-stats{grid-template-columns:repeat(4,minmax(150px,1fr))}
+.admin-filters{grid-template-columns:minmax(180px,1fr) minmax(180px,1fr) auto auto}
+.machine-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:18px;margin-bottom:22px}
+.machine-card{background:#181c23;border:1px solid #252b36;border-radius:16px;padding:20px}
+.machine-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.machine-card-header h2{margin:0 0 5px;font-size:19px}
+.machine-card-header p{margin:0}
+.machine-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.machine-facts div{background:#11151c;border:1px solid #252b36;border-radius:11px;padding:11px}
+.machine-facts span{display:block;color:#9ca3af;font-size:12px;margin-bottom:5px}
+.machine-facts strong{display:block;overflow-wrap:anywhere;font-size:14px}
+.machine-actions{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+.machine-actions form{margin:0}
+.btn.wake{background:#047857}
+.btn.disabled{background:#374151;color:#9ca3af;cursor:not-allowed}
+.future-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px;padding-top:14px;border-top:1px solid #252b36}
+.future-actions span{padding:7px 9px;border-radius:8px;background:#11151c;color:#6b7280;font-size:12px;cursor:not-allowed}
+@media(max-width:900px){
+  .admin-stats{grid-template-columns:repeat(2,1fr)}
+  .admin-filters{grid-template-columns:1fr}
+  .machine-grid{grid-template-columns:1fr}
+}
+
+
+/* OpenDesk Hub v0.9.4.1 - Wake-on-LAN multiple */
+.bulk-action-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  margin-bottom:18px;
+}
+.bulk-action-bar h2{margin:0 0 6px}
+.bulk-action-bar p{margin:0}
+.bulk-action-controls{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.bulk-action-controls input[type="text"]{min-width:170px}
+.bulk-action-controls input[type="number"]{width:90px}
+.select-all-control{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#d1d5db;
+  font-size:14px;
+  cursor:pointer;
+}
+.machine-title{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  min-width:0;
+}
+.machine-selector{
+  width:18px;
+  height:18px;
+  margin-top:3px;
+  cursor:pointer;
+}
+.machine-selector-placeholder{
+  display:block;
+  width:18px;
+  height:18px;
+  margin-top:3px;
+  border:1px dashed #4b5563;
+  border-radius:4px;
+}
+@media(max-width:900px){
+  .bulk-action-bar{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .bulk-action-controls{
+    justify-content:flex-start;
+  }
+}
+
+
+/* OpenDesk Hub v0.9.5.0 - Action Manager */
+.task-create-form{grid-template-columns:minmax(240px,1.5fr) minmax(220px,1fr) auto}
+.task-filter-form{grid-template-columns:minmax(180px,260px) auto auto}
+.task-note{margin:14px 0 0}
+.task-success{border-color:#166534;color:#bbf7d0}
+.task-status{display:inline-flex;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:700}
+.task-pending{background:#3f3f46;color:#e4e4e7}
+.task-running{background:#1e3a8a;color:#bfdbfe}
+.task-success{background:#14532d;color:#bbf7d0}
+.task-failed{background:#7f1d1d;color:#fecaca}
+.task-error{color:#fca5a5}
+@media(max-width:900px){.task-create-form,.task-filter-form{grid-template-columns:1fr}}
+
+/* OpenDesk Hub v0.9.5.1 - Diagnostic */
+.diagnostic-stats{grid-template-columns:repeat(4,minmax(150px,1fr))}
+.diagnostic-secondary-stats{grid-template-columns:repeat(2,minmax(220px,1fr))}
+.diagnostic-healthy{border-color:rgba(16,185,129,.35)}
+.diagnostic-warning{border-color:rgba(245,158,11,.35)}
+.diagnostic-critical{border-color:rgba(239,68,68,.35)}
+.health-badge{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.health-badge.healthy{background:rgba(16,185,129,.14);color:#6ee7b7}
+.health-badge.warning{background:rgba(245,158,11,.14);color:#fcd34d}
+.health-badge.critical{background:rgba(239,68,68,.14);color:#fca5a5}
+.check-ok{color:#6ee7b7;font-weight:600}
+.check-ko{color:#fca5a5;font-weight:600}
+@media(max-width:900px){.diagnostic-stats,.diagnostic-secondary-stats{grid-template-columns:repeat(2,1fr)}}
+
+/* OpenDesk Hub v0.9.5.2 - Fiabilité des tâches */
+.task-cancelled{
+  background:rgba(107,114,128,.16);
+  color:#d1d5db;
+}
+.task-error-box{
+  border-color:rgba(239,68,68,.35);
+  color:#fca5a5;
+}
+.task-detail-stats{
+  grid-template-columns:repeat(3,minmax(180px,1fr));
+}
+.task-detail-value{
+  font-size:20px;
+  overflow-wrap:anywhere;
+}
+.task-timeline{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(180px,1fr));
+  gap:12px;
+}
+.task-timeline div,
+.result-data-grid div{
+  background:#11151c;
+  border:1px solid #252b36;
+  border-radius:11px;
+  padding:12px;
+}
+.task-timeline span,
+.result-data-grid dt{
+  display:block;
+  color:#9ca3af;
+  font-size:12px;
+  margin-bottom:5px;
+}
+.result-data-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+  margin:0;
+}
+.result-data-grid dd{
+  margin:0;
+  overflow-wrap:anywhere;
+}
+.task-error-detail{
+  background:rgba(239,68,68,.08);
+  border:1px solid rgba(239,68,68,.25);
+  border-radius:11px;
+  padding:14px;
+  margin:14px 0;
+}
+.task-error-detail pre{
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.task-detail-actions{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.task-detail-actions form{
+  margin:0;
+}
+@media(max-width:900px){
+  .task-detail-stats,
+  .task-timeline{
+    grid-template-columns:1fr;
+  }
+}
+
+/* OpenDesk Hub v0.9.5.3 - Tâches multiples */
+.task-layout{display:grid;grid-template-columns:minmax(280px,.8fr) minmax(360px,1.2fr);gap:18px;margin-bottom:18px}
+.task-single-form,#bulk-task-form{display:flex;flex-direction:column;gap:14px}
+.task-single-form label,#bulk-task-form>label{display:flex;flex-direction:column;gap:7px;color:#d1d5db;font-size:13px;font-weight:600}
+.bulk-client-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bulk-client-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-height:310px;overflow:auto;padding-right:4px}
+.bulk-client-item{display:flex;align-items:flex-start;gap:10px;padding:11px;background:#11151c;border:1px solid #252b36;border-radius:11px;cursor:pointer}
+.bulk-client-item:hover{border-color:#3b82f6}
+.bulk-client-item input{margin-top:3px}
+.bulk-client-item span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.bulk-client-item small{color:#9ca3af}
+@media(max-width:900px){.task-layout{grid-template-columns:1fr}.bulk-client-list{grid-template-columns:1fr}}
+
+/* OpenDesk Hub v0.9.5.4 - Actions rapides machine */
+.quick-action-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}
+.quick-action-header h2{margin:0 0 5px}.quick-action-header p{margin:0}
+.quick-action-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.quick-action-grid form{margin:0}
+.quick-action-button{width:100%;height:100%;min-height:132px;display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:16px;border:1px solid #252b36;border-radius:13px;background:#11151c;color:#f3f4f6;text-align:left;cursor:pointer}
+.quick-action-button:hover{border-color:#3b82f6;background:#151b25;transform:translateY(-1px)}
+.quick-action-button small{color:#9ca3af;line-height:1.4}.quick-action-icon{font-size:23px}
+@media(max-width:1100px){.quick-action-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:650px){.quick-action-header{flex-direction:column}.quick-action-grid{grid-template-columns:1fr}}
+
+/* OpenDesk Hub v0.9.5.7 - Tableau de bord des tâches */
+.task-stats-grid{
+  grid-template-columns:repeat(6,minmax(120px,1fr));
+}
+.task-stat-link{
+  text-decoration:none;
+  color:inherit;
+  transition:transform .15s ease,border-color .15s ease;
+}
+.task-stat-link:hover{
+  transform:translateY(-2px);
+  border-color:#3b82f6;
+}
+.task-search-form{
+  grid-template-columns:minmax(260px,1fr) minmax(180px,.45fr) auto auto auto;
+}
+.task-result-summary{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:14px;
+}
+@media(max-width:1100px){
+  .task-stats-grid{
+    grid-template-columns:repeat(3,1fr);
+  }
+  .task-search-form{
+    grid-template-columns:1fr 1fr;
+  }
+}
+@media(max-width:650px){
+  .task-stats-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+  .task-search-form{
+    grid-template-columns:1fr;
+  }
+}
+
+/* OpenDesk Hub v0.9.5.8 - Entretien des tâches */
+.task-maintenance-card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+.task-maintenance-card h2{margin:0 0 6px}
+.task-maintenance-card p{margin:0;max-width:760px}
+.task-cleanup-form{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-shrink:0;
+}
+@media(max-width:900px){
+  .task-maintenance-card{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .task-cleanup-form{
+    align-items:stretch;
+    flex-direction:column;
+  }
+}
+
+/* OpenDesk Hub v0.9.5.9 - Profils de maintenance */
+.maintenance-profile-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin:16px 0;
+}
+.maintenance-profile-card{
+  display:flex;
+  gap:10px;
+  padding:14px;
+  background:#11151c;
+  border:1px solid #252b36;
+  border-radius:12px;
+  cursor:pointer;
+}
+.maintenance-profile-card:hover{border-color:#3b82f6}
+.maintenance-profile-card span{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.maintenance-profile-card small{color:#9ca3af}
+@media(max-width:800px){
+  .maintenance-profile-grid{grid-template-columns:1fr}
+}
+
+.machine-maintenance-header{display:flex;justify-content:space-between;gap:16px;margin-bottom:16px}
+.machine-maintenance-header h2{margin:0 0 5px}.machine-maintenance-header p{margin:0}
+.machine-maintenance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.machine-maintenance-grid form{margin:0}
+.machine-maintenance-card{width:100%;min-height:150px;display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:17px;border:1px solid #252b36;border-radius:13px;background:#11151c;color:#f3f4f6;text-align:left;cursor:pointer}
+.machine-maintenance-card:hover{border-color:#3b82f6;background:#151b25}
+.machine-maintenance-card small{color:#9ca3af;line-height:1.45}
+.machine-maintenance-card em{color:#60a5fa;font-size:12px;font-style:normal}
+.machine-maintenance-icon{font-size:25px}
+@media(max-width:760px){.machine-maintenance-header{flex-direction:column}.machine-maintenance-grid{grid-template-columns:1fr}}
+
+/* OpenDesk Hub v0.9.6.1 - Actions groupées sur les tâches */
+.bulk-task-action-bar{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:16px;
+}
+.bulk-task-action-buttons{
+  display:flex;
+  gap:10px;
+  margin-left:auto;
+}
+.task-row-checkbox{
+  width:17px;
+  height:17px;
+  cursor:pointer;
+}
+@media(max-width:800px){
+  .bulk-task-action-bar{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .bulk-task-action-buttons{
+    flex-direction:column;
+    margin-left:0;
+  }
+}
+
+/* OpenDesk Hub v0.9.6.2 - Tâches en direct */
+.live-task-indicator{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 11px;
+  border:1px solid rgba(16,185,129,.28);
+  border-radius:999px;
+  background:rgba(16,185,129,.08);
+  color:#6ee7b7;
+  font-size:12px;
+  font-weight:700;
+}
+.live-task-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#10b981;
+  box-shadow:0 0 0 4px rgba(16,185,129,.12);
+}
+.live-task-indicator.live-task-offline{
+  border-color:rgba(239,68,68,.28);
+  background:rgba(239,68,68,.08);
+  color:#fca5a5;
+}
+.live-task-indicator.live-task-offline .live-task-dot{
+  background:#ef4444;
+  box-shadow:0 0 0 4px rgba(239,68,68,.12);
+}
+.task-live-status,
+.task-live-result{
+  transition:opacity .15s ease;
+}
+
+/* OpenDesk Hub v0.9.6.3 - Widget tâches Dashboard */
+.task-dashboard-panel{grid-column:1/-1}
+.dashboard-task-counters{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(120px,1fr));
+  gap:10px;
+  margin-bottom:16px;
+}
+.dashboard-task-counters a{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  padding:13px;
+  border:1px solid #252b36;
+  border-radius:11px;
+  background:#11151c;
+  color:inherit;
+  text-decoration:none;
+}
+.dashboard-task-counters a:hover{border-color:#3b82f6}
+.dashboard-task-counters span{color:#9ca3af;font-size:12px}
+.dashboard-task-counters strong{font-size:22px}
+.dashboard-task-list{display:flex;flex-direction:column;gap:8px}
+.dashboard-task-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:11px 12px;
+  border:1px solid #252b36;
+  border-radius:10px;
+  background:#11151c;
+  color:inherit;
+  text-decoration:none;
+}
+.dashboard-task-row:hover{border-color:#3b82f6}
+.dashboard-task-row>div{display:flex;flex-direction:column;gap:4px}
+.dashboard-task-row>div:last-child{align-items:flex-end}
+.dashboard-task-row span:not(.task-status),
+.dashboard-task-row small{color:#9ca3af;font-size:12px}
+@media(max-width:800px){
+  .dashboard-task-counters{grid-template-columns:repeat(2,1fr)}
+}
+
+/* OpenDesk Hub v0.9.6.4 - Notifications des tâches */
+.notification-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+  flex-wrap:wrap;
+}
+@media(max-width:760px){
+  .notification-actions{
+    justify-content:flex-start;
+    width:100%;
+  }
+}
+
+/* OpenDesk Hub v0.9.6.5 - Historique des tâches par machine */
+.machine-task-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:16px;
+}
+.machine-task-header h2{margin:0 0 5px}
+.machine-task-header p{margin:0}
+.machine-task-counters{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(110px,1fr));
+  gap:10px;
+  margin-bottom:16px;
+}
+.machine-task-counters a{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  padding:12px;
+  border:1px solid #252b36;
+  border-radius:11px;
+  background:#11151c;
+  color:inherit;
+  text-decoration:none;
+}
+.machine-task-counters a:hover{border-color:#3b82f6}
+.machine-task-counters span{color:#9ca3af;font-size:12px}
+.machine-task-counters strong{font-size:21px}
+.machine-task-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.machine-task-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:11px 12px;
+  border:1px solid #252b36;
+  border-radius:10px;
+  background:#11151c;
+  color:inherit;
+  text-decoration:none;
+}
+.machine-task-row:hover{border-color:#3b82f6}
+.machine-task-row>div{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+}
+.machine-task-row>div:last-child{align-items:flex-end}
+.machine-task-row span:not(.task-status),
+.machine-task-row small{
+  color:#9ca3af;
+  font-size:12px;
+}
+.machine-task-row small{
+  max-width:420px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+@media(max-width:900px){
+  .machine-task-counters{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+@media(max-width:650px){
+  .machine-task-header{flex-direction:column}
+  .machine-task-row{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .machine-task-row>div:last-child{align-items:flex-start}
+}
+
+/* OpenDesk Hub v0.9.6.7 - Filtres avancés des tâches */
+.task-search-form{
+  grid-template-columns:minmax(240px,1.2fr) minmax(180px,.8fr)
+    minmax(190px,.9fr) minmax(160px,.7fr) auto auto auto;
+}
+@media(max-width:1200px){
+  .task-search-form{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:650px){
+  .task-search-form{
+    grid-template-columns:1fr;
+  }
+}
+
+/* OpenDesk Hub v0.9.6.9 - Rapport imprimable */
+.task-detail-header-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+@media(max-width:650px){
+  .task-detail-header-actions{
+    width:100%;
+    align-items:stretch;
+    flex-direction:column;
+  }
+}
+
+/* OpenDesk Hub v0.9.7.0 - Export JSON et copie UUID */
+.copy-task-feedback{
+  position:fixed;
+  right:22px;
+  bottom:22px;
+  z-index:1000;
+  max-width:360px;
+  padding:12px 15px;
+  border:1px solid rgba(16,185,129,.32);
+  border-radius:10px;
+  background:#111827;
+  color:#d1fae5;
+  box-shadow:0 10px 30px rgba(0,0,0,.3);
+  opacity:0;
+  pointer-events:none;
+  transform:translateY(8px);
+  transition:opacity .18s ease,transform .18s ease;
+}
+.copy-task-feedback.visible{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* OpenDesk Hub v0.9.7.1 - Duplication de tâche */
+.task-detail-actions form{
+  display:inline-flex;
+}
+
+/* OpenDesk Hub v0.9.7.2 - Pagination des tâches */
+.task-pagination{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin:16px 0 4px;
+}
+.task-pagination-info{
+  color:#9ca3af;
+  font-size:13px;
+  font-weight:700;
+}
+.btn.disabled{
+  opacity:.45;
+  pointer-events:none;
+}
+@media(max-width:650px){
+  .task-pagination{
+    flex-direction:column;
+  }
+}
+
+/* OpenDesk Hub v0.9.7.3 - Filtres de dates */
+.task-date-filter{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-width:170px;
+}
+.task-date-filter span{
+  color:#9ca3af;
+  font-size:12px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.task-date-filter input{
+  width:100%;
+}
+.task-search-form{
+  grid-template-columns:minmax(220px,1fr) minmax(165px,.75fr)
+    minmax(175px,.8fr) minmax(145px,.65fr)
+    minmax(165px,.7fr) minmax(165px,.7fr)
+    minmax(140px,.6fr) auto auto auto;
+}
+@media(max-width:1400px){
+  .task-search-form{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
+@media(max-width:850px){
+  .task-search-form{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:650px){
+  .task-search-form{
+    grid-template-columns:1fr;
+  }
+  .task-date-filter{
+    min-width:0;
+  }
+}
+
+/* OpenDesk Hub v0.9.7.4 - Rapport analytique des tâches */
+.task-page-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.task-report-filters{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.task-report-filters label{display:flex;flex-direction:column;gap:6px}
+.task-report-filters label span{color:#9ca3af;font-size:12px;font-weight:700}
+.task-report-stats{grid-template-columns:repeat(6,minmax(120px,1fr))}
+.task-report-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.task-report-status-grid{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px}
+.task-report-status-grid div{display:flex;flex-direction:column;gap:5px;padding:13px;border:1px solid #252b36;border-radius:11px;background:#11151c}
+.task-report-status-grid span{color:#9ca3af;font-size:12px}
+.task-report-status-grid strong{font-size:21px}
+@media(max-width:1100px){.task-report-stats{grid-template-columns:repeat(3,1fr)}.task-report-grid{grid-template-columns:1fr}.task-report-status-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:650px){.task-report-stats,.task-report-status-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* OpenDesk Hub v0.9.7.5 - Export du rapport analytique */
+.task-report-header-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+@media(max-width:650px){
+  .task-report-header-actions{
+    width:100%;
+    align-items:stretch;
+    flex-direction:column;
+  }
+}
+
+/* OpenDesk Hub v0.9.8.0 - Pack productivité */
+.task-quick-periods,
+.task-report-quick-periods{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.task-quick-periods>div:first-child{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.task-quick-period-buttons,
+.task-report-quick-periods>div{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.task-refresh-controls{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.task-refresh-controls label{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  color:#d1d5db;
+  font-size:13px;
+  font-weight:700;
+}
+.task-refresh-controls select{
+  min-width:145px;
+}
+@media print{
+  .sidebar,
+  .topbar,
+  .page-header .task-report-header-actions,
+  .task-report-quick-periods,
+  .task-report-filters{
+    display:none !important;
+  }
+
+  body,
+  .main-content{
+    background:#fff !important;
+    color:#111 !important;
+  }
+
+  .card,
+  .stat-card{
+    box-shadow:none !important;
+    border:1px solid #ddd !important;
+    break-inside:avoid;
+  }
+}
+@media(max-width:850px){
+  .task-quick-periods,
+  .task-report-quick-periods{
+    align-items:stretch;
+    flex-direction:column;
+  }
+}
+
+/* OpenDesk Hub v0.9.8.1 - Diagnostics Agent sûrs */
+.agent-update-notice{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+.agent-update-notice>div{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+@media(max-width:700px){
+  .agent-update-notice{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+}
+
+/* OpenDesk Hub v1.0.0 - Fondation Administration */
+.admin-users-grid{
+  display:grid;
+  grid-template-columns:minmax(280px,.65fr) minmax(700px,1.8fr);
+  gap:18px;
+  align-items:start;
+}
+.stack-form{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.stack-form label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.stack-form label span{
+  color:#9ca3af;
+  font-size:12px;
+  font-weight:700;
+}
+.inline-form{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.role-cards{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(220px,1fr));
+  gap:12px;
+}
+.role-cards>div{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  padding:15px;
+  border:1px solid #252b36;
+  border-radius:12px;
+  background:#11151c;
+}
+.role-cards span{
+  color:#9ca3af;
+  font-size:13px;
+}
+@media(max-width:1150px){
+  .admin-users-grid{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  .role-cards{grid-template-columns:1fr}
+  .inline-form{align-items:stretch;flex-direction:column}
+}
+
+/* OpenDesk Hub v1.0.1 - Contrôle d’accès */
+.viewer-banner{
+  margin-bottom:16px;
+  padding:12px 15px;
+  border:1px solid #66531b;
+  border-radius:12px;
+  background:#2c2510;
+  color:#f7d774;
+  font-weight:700;
+}
+.viewer-disabled-action{
+  opacity:.48;
+  pointer-events:none;
+}
+.viewer-disabled-link{
+  opacity:.42 !important;
+  pointer-events:none;
+}
+.profile-grid{
+  display:grid;
+  grid-template-columns:minmax(300px,.8fr) minmax(300px,1fr);
+  gap:18px;
+  align-items:start;
+}
+.login-success{
+  margin-bottom:14px;
+  padding:12px;
+  border:1px solid #1f6f4a;
+  border-radius:10px;
+  background:#10291f;
+  color:#8ce8ba;
+}
+@media(max-width:800px){
+  .profile-grid{grid-template-columns:1fr}
+}
+
+/* OpenDesk Hub v1.0.2 - Audit complet */
+.audit-stats-grid{
+  grid-template-columns:repeat(4,minmax(130px,1fr));
+}
+.audit-period-shortcuts{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  flex-wrap:wrap;
+}
+.audit-period-shortcuts>div{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.audit-filters label{
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+.audit-filters label span{
+  color:#9ca3af;
+  font-size:12px;
+  font-weight:700;
+}
+@media(max-width:800px){
+  .audit-stats-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+  .audit-period-shortcuts{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+}
+
+/* OpenDesk Hub v1.1.0 - Centre de supervision */
+.dashboard-head-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.supervision-kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(150px,1fr));
+  gap:14px;
+  margin-bottom:18px;
+}
+.supervision-capacity-grid{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:18px;
+  margin-bottom:18px;
+}
+.capacity-card{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.capacity-card>div:first-child{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.capacity-card span{
+  color:#9ca3af;
+}
+.capacity-bar{
+  height:13px;
+  overflow:hidden;
+  border-radius:999px;
+  background:#252b36;
+}
+.capacity-bar span{
+  display:block;
+  height:100%;
+  min-width:2px;
+  border-radius:inherit;
+  background:#2f6fed;
+  transition:width .35s ease;
+}
+.capacity-bar span.critical{
+  background:#d84b4b;
+}
+.supervision-alert-grid{
+  display:grid;
+  grid-template-columns:minmax(340px,.9fr) minmax(500px,1.4fr);
+  gap:18px;
+  margin-bottom:18px;
+}
+.supervision-alert-list{
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+.supervision-alert{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  padding:12px 14px;
+  border:1px solid #303744;
+  border-left:4px solid #667085;
+  border-radius:10px;
+  background:#12171f;
+  color:inherit;
+  text-decoration:none;
+}
+.supervision-alert span{
+  color:#9ca3af;
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+}
+.supervision-alert small{
+  color:#9ca3af;
+}
+.supervision-alert.warning{
+  border-left-color:#d19a35;
+}
+.supervision-alert.danger{
+  border-left-color:#d84b4b;
+}
+.supervision-alert:hover{
+  transform:translateY(-1px);
+  border-color:#475569;
+}
+@media(max-width:1450px){
+  .supervision-kpi-grid{
+    grid-template-columns:repeat(3,minmax(150px,1fr));
+  }
+}
+@media(max-width:1050px){
+  .supervision-alert-grid,
+  .supervision-capacity-grid{
+    grid-template-columns:1fr;
+  }
+}
+@media(max-width:700px){
+  .supervision-kpi-grid{
+    grid-template-columns:repeat(2,minmax(130px,1fr));
+  }
+  .dashboard-head-actions{
+    width:100%;
+    align-items:stretch;
+    flex-direction:column;
+  }
+}
+
+/* OpenDesk Hub v1.2.0 - Inventaire professionnel */
+.inventory-section-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(320px,1fr));
+  gap:18px;
+}
+.inventory-fact-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(150px,1fr));
+  gap:10px;
+}
+.inventory-fact-grid>div{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  padding:12px;
+  border:1px solid #252b36;
+  border-radius:10px;
+  background:#11151c;
+}
+.inventory-fact-grid span{
+  color:#9ca3af;
+  font-size:12px;
+}
+.inventory-simple-list{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  padding-left:20px;
+}
+.inventory-software-search{
+  width:100%;
+  margin-bottom:14px;
+}
+@media(max-width:950px){
+  .inventory-section-grid{
+    grid-template-columns:1fr;
+  }
+}
+@media(max-width:600px){
+  .inventory-fact-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+/* OpenDesk Hub v1.2.1 - Inventaire consolidé du parc */
+.software-stats-grid{
+  grid-template-columns:repeat(4,minmax(150px,1fr));
+}
+.compliance-stats-grid{
+  grid-template-columns:repeat(5,minmax(140px,1fr));
+}
+.software-machine-details summary{
+  cursor:pointer;
+  color:#79a7ff;
+  font-weight:700;
+}
+.software-machine-details div{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:8px;
+  min-width:240px;
+}
+.software-machine-details span{
+  padding:4px 8px;
+  border-radius:999px;
+  background:#252b36;
+  color:#d1d5db;
+  font-size:12px;
+}
+.compliance-legend{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(160px,1fr));
+  gap:12px;
+}
+.compliance-legend>div{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+.compliance-legend small{
+  color:#9ca3af;
+}
+.health-chip.unknown{
+  background:#343b48;
+  color:#d1d5db;
+}
+@media(max-width:1050px){
+  .software-stats-grid,
+  .compliance-stats-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+  .compliance-legend{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+@media(max-width:600px){
+  .software-stats-grid,
+  .compliance-stats-grid,
+  .compliance-legend{
+    grid-template-columns:1fr;
+  }
+}

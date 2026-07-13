@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}Rapport des tâches
+<script>
+function reportDateValue(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function applyReportPeriod(days) {
+  const form = document.querySelector(".task-report-filters");
+  const dateFrom = form.querySelector('[name="date_from"]');
+  const dateTo = form.querySelector('[name="date_to"]');
+  const today = new Date();
+
+  dateTo.value = reportDateValue(today);
+
+  const start = new Date(today);
+  start.setDate(today.getDate() - Math.max(days - 1, 0));
+  dateFrom.value = reportDateValue(start);
+
+  form.submit();
+}
+
+function clearReportPeriod() {
+  const form = document.querySelector(".task-report-filters");
+  form.querySelector('[name="date_from"]').value = "";
+  form.querySelector('[name="date_to"]').value = "";
+  form.submit();
+}
+</script>
+
+{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Rapport des tâches</h1>
+    <p class="muted">Analyse de l’activité et de la fiabilité des actions.</p>
+  </div>
+  <div class="task-report-header-actions">
+    <button class="btn" type="button" onclick="window.print()">
+      🖨 Imprimer / PDF
+    </button>
+
+    <a
+      class="btn"
+      href="/tasks-report/export.csv?date_from={{ date_from }}&date_to={{ date_to }}"
+    >
+      ⬇ Export CSV du rapport
+    </a>
+
+    <a class="btn secondary" href="/tasks">Retour aux tâches</a>
+  </div>
+</div>
+
+
+<div class="card task-report-quick-periods">
+  <strong>Périodes rapides</strong>
+
+  <div>
+    <button class="btn secondary small" type="button" onclick="applyReportPeriod(0)">
+      Aujourd’hui
+    </button>
+    <button class="btn secondary small" type="button" onclick="applyReportPeriod(7)">
+      7 jours
+    </button>
+    <button class="btn secondary small" type="button" onclick="applyReportPeriod(30)">
+      30 jours
+    </button>
+    <button class="btn secondary small" type="button" onclick="clearReportPeriod()">
+      Toute la période
+    </button>
+  </div>
+</div>
+
+<div class="card">
+  <form method="get" action="/tasks-report" class="task-report-filters">
+    <label>
+      <span>Du</span>
+      <input type="date" name="date_from" value="{{ date_from }}">
+    </label>
+    <label>
+      <span>Au</span>
+      <input type="date" name="date_to" value="{{ date_to }}">
+    </label>
+    <button class="btn" type="submit">Appliquer</button>
+    <a class="btn secondary" href="/tasks-report">Réinitialiser</a>
+  </form>
+</div>
+
+<div class="stats-grid task-report-stats">
+  <div class="stat-card">
+    <div class="stat-label">Total</div>
+    <div class="stat-value">{{ total }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Succès</div>
+    <div class="stat-value">{{ counters.success }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Échecs</div>
+    <div class="stat-value">{{ counters.failed }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Taux de réussite</div>
+    <div class="stat-value">{{ success_rate }} %</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Durée moyenne</div>
+    <div class="stat-value">{{ average_duration }} s</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Actives</div>
+    <div class="stat-value">{{ counters.pending + counters.running }}</div>
+  </div>
+</div>
+
+<div class="task-report-grid">
+  <div class="card table-wrap">
+    <h2>Répartition par action</h2>
+    <table>
+      <tr>
+        <th>Action</th>
+        <th>Total</th>
+        <th>Succès</th>
+        <th>Échecs</th>
+        <th>Réussite</th>
+      </tr>
+      {% for label, stats in action_rows %}
+      <tr>
+        <td><strong>{{ label }}</strong></td>
+        <td>{{ stats.total }}</td>
+        <td>{{ stats.success }}</td>
+        <td>{{ stats.failed }}</td>
+        <td>
+          {% set done = stats.success + stats.failed %}
+          {% if done %}
+          {{ ((stats.success / done) * 100)|round(1) }} %
+          {% else %}-{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      {% if not action_rows %}
+      <tr><td colspan="5" class="empty">Aucune donnée.</td></tr>
+      {% endif %}
+    </table>
+  </div>
+
+  <div class="card table-wrap">
+    <h2>Machines les plus actives</h2>
+    <table>
+      <tr>
+        <th>Machine</th>
+        <th>Total</th>
+        <th>Succès</th>
+        <th>Échecs</th>
+      </tr>
+      {% for name, stats in machine_rows %}
+      <tr>
+        <td><strong>{{ name }}</strong></td>
+        <td>{{ stats.total }}</td>
+        <td>{{ stats.success }}</td>
+        <td>{{ stats.failed }}</td>
+      </tr>
+      {% endfor %}
+      {% if not machine_rows %}
+      <tr><td colspan="4" class="empty">Aucune donnée.</td></tr>
+      {% endif %}
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h2>État global</h2>
+  <div class="task-report-status-grid">
+    <div><span>En attente</span><strong>{{ counters.pending }}</strong></div>
+    <div><span>En cours</span><strong>{{ counters.running }}</strong></div>
+    <div><span>Succès</span><strong>{{ counters.success }}</strong></div>
+    <div><span>Échecs</span><strong>{{ counters.failed }}</strong></div>
+    <div><span>Annulées</span><strong>{{ counters.cancelled }}</strong></div>
+  </div>
+</div>
+
+{% endblock %}

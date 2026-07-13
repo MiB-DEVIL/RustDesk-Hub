@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}Administration{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Centre d’administration</h1>
+    <p class="muted">
+      Vue unifiée des machines et Wake-on-LAN individuel ou multiple.
+    </p>
+  </div>
+</div>
+
+<div class="stats-grid admin-stats">
+  <div class="stat-card">
+    <div class="stat-label">Machines</div>
+    <div class="stat-value">{{ total_count }}</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">En ligne</div>
+    <div class="stat-value">{{ online_count }}</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">Hors ligne</div>
+    <div class="stat-value">{{ offline_count }}</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">Affichées</div>
+    <div class="stat-value">{{ rows|length }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <form method="get" action="/administration" class="filters admin-filters">
+    <select name="group">
+      <option value="">Tous les groupes</option>
+      {% for group in groups %}
+      <option
+        value="{{ group.name }}"
+        {% if selected_group == group.name %}selected{% endif %}
+      >
+        {{ group.name }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <select name="status">
+      <option value="">Tous les états</option>
+      <option value="online" {% if selected_status == "online" %}selected{% endif %}>
+        En ligne
+      </option>
+      <option value="offline" {% if selected_status == "offline" %}selected{% endif %}>
+        Hors ligne
+      </option>
+    </select>
+
+    <button class="btn" type="submit">Filtrer</button>
+    <a class="btn secondary" href="/administration">Réinitialiser</a>
+  </form>
+</div>
+
+<form
+  method="post"
+  action="/actions/wake-selected"
+  id="bulk-wake-form"
+>
+
+<div class="card bulk-action-bar">
+  <div>
+    <h2>Wake-on-LAN multiple</h2>
+    <p class="muted">
+      Coche les machines à réveiller puis lance l’action.
+    </p>
+  </div>
+
+  <div class="bulk-action-controls">
+    <label class="select-all-control">
+      <input type="checkbox" id="select-all-wol">
+      Tout sélectionner
+    </label>
+
+    <input
+      type="text"
+      name="broadcast_address"
+      value="255.255.255.255"
+      placeholder="Adresse broadcast"
+      aria-label="Adresse broadcast"
+    >
+
+    <input
+      type="number"
+      name="port"
+      value="9"
+      min="1"
+      max="65535"
+      aria-label="Port UDP"
+    >
+
+    <button
+      class="btn wake"
+      type="submit"
+      onclick="return confirmBulkWake()"
+    >
+      ⚡ Réveiller la sélection
+    </button>
+  </div>
+</div>
+
+<div class="machine-grid">
+  {% for client, inventory in rows %}
+
+  <section class="machine-card">
+    <div class="machine-card-header">
+      <div class="machine-title">
+        {% if inventory and inventory.mac %}
+        <input
+          class="machine-selector"
+          type="checkbox"
+          name="client_ids"
+          value="{{ client.id }}"
+          aria-label="Sélectionner {{ client.name }}"
+        >
+        {% else %}
+        <span
+          class="machine-selector-placeholder"
+          title="Adresse MAC absente"
+        ></span>
+        {% endif %}
+
+        <div>
+          <h2>{{ client.name }}</h2>
+          <p class="muted">{{ client.hostname or "Hostname inconnu" }}</p>
+        </div>
+      </div>
+
+      {% if client.online %}
+      <span class="badge online">En ligne</span>
+      {% else %}
+      <span class="badge offline">Hors ligne</span>
+      {% endif %}
+    </div>
+
+    <div class="machine-facts">
+      <div>
+        <span>ID RustDesk</span>
+        <strong>{{ client.rustdesk_id }}</strong>
+      </div>
+
+      <div>
+        <span>Adresse IP</span>
+        <strong>{{ client.ip or "-" }}</strong>
+      </div>
+
+      <div>
+        <span>Groupe</span>
+        <strong>{{ client.group_name or "-" }}</strong>
+      </div>
+
+      <div>
+        <span>Adresse MAC</span>
+        <strong>
+          {% if inventory %}{{ inventory.mac or "-" }}{% else %}-{% endif %}
+        </strong>
+      </div>
+    </div>
+
+    <div class="machine-actions">
+      <a
+        class="btn"
+        href="rustdesk://connection/new/{{ client.rustdesk_id }}"
+      >
+        🖥️ RustDesk
+      </a>
+
+      <a class="btn secondary" href="/machines/{{ client.id }}">
+        Fiche
+      </a>
+
+      <a class="btn secondary" href="/inventory/{{ client.id }}">
+        Inventaire
+      </a>
+
+      {% if inventory and inventory.mac %}
+      <button
+        class="btn wake"
+        type="submit"
+        formaction="/actions/wake/{{ client.id }}"
+        formmethod="post"
+        onclick="return confirm('Envoyer le Wake-on-LAN à {{ client.name }} ?')"
+      >
+        ⚡ Réveiller
+      </button>
+      {% else %}
+      <button class="btn disabled" type="button" disabled>
+        ⚡ MAC absente
+      </button>
+      {% endif %}
+    </div>
+
+    <div class="future-actions">
+      <span title="Prévu dans un prochain sprint">🔄 Redémarrer</span>
+      <span title="Prévu dans un prochain sprint">⛔ Arrêter</span>
+      <span title="Prévu dans un prochain sprint">📜 PowerShell</span>
+      <span title="Prévu dans un prochain sprint">⚙ Services</span>
+    </div>
+  </section>
+
+  {% endfor %}
+</div>
+
+</form>
+
+{% if not rows %}
+<div class="card empty">
+  Aucune machine ne correspond aux filtres.
+</div>
+{% endif %}
+
+<div class="card">
+  <h2>Actions distantes</h2>
+  <p class="muted">
+    Le Wake-on-LAN individuel et multiple est actif. Les commandes de
+    redémarrage, arrêt, PowerShell et services restent désactivées tant
+    que le canal sécurisé Hub ↔ Agent n’est pas installé.
+  </p>
+</div>
+
+<script>
+(function () {
+  const selectAll = document.getElementById("select-all-wol");
+  const selectors = Array.from(
+    document.querySelectorAll(".machine-selector")
+  );
+
+  if (!selectAll) {
+    return;
+  }
+
+  selectAll.addEventListener("change", function () {
+    selectors.forEach(function (checkbox) {
+      checkbox.checked = selectAll.checked;
+    });
+  });
+
+  selectors.forEach(function (checkbox) {
+    checkbox.addEventListener("change", function () {
+      selectAll.checked =
+        selectors.length > 0 &&
+        selectors.every(function (item) {
+          return item.checked;
+        });
+    });
+  });
+})();
+
+function confirmBulkWake() {
+  const selected = document.querySelectorAll(
+    ".machine-selector:checked"
+  ).length;
+
+  if (selected === 0) {
+    alert("Sélectionne au moins une machine disposant d’une adresse MAC.");
+    return false;
+  }
+
+  return confirm(
+    "Envoyer le Wake-on-LAN à " +
+    selected +
+    " machine(s) ?"
+  );
+}
+</script>
+
+{% endblock %}

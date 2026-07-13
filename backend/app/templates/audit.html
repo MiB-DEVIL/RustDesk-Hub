@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Audit{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Journal d’audit</h1>
+    <p class="muted">
+      Actions administratives autorisées et tentatives refusées.
+    </p>
+  </div>
+
+  <a
+    class="btn"
+    href="/audit/export.csv?search={{ search }}&result={{ selected_result }}&date_from={{ date_from }}&date_to={{ date_to }}"
+  >
+    ⬇ Export CSV
+  </a>
+</div>
+
+<div class="stats-grid audit-stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Événements</div>
+    <div class="stat-value">{{ total_count }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Autorisés</div>
+    <div class="stat-value">{{ allowed_count }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Refusés</div>
+    <div class="stat-value">{{ denied_count }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Affichés</div>
+    <div class="stat-value">{{ rows|length }}</div>
+  </div>
+</div>
+
+<div class="card audit-period-shortcuts">
+  <strong>Périodes rapides</strong>
+  <div>
+    <button class="btn secondary small" type="button" onclick="applyAuditPeriod(0)">
+      Aujourd’hui
+    </button>
+    <button class="btn secondary small" type="button" onclick="applyAuditPeriod(7)">
+      7 jours
+    </button>
+    <button class="btn secondary small" type="button" onclick="applyAuditPeriod(30)">
+      30 jours
+    </button>
+    <button class="btn secondary small" type="button" onclick="clearAuditPeriod()">
+      Toute la période
+    </button>
+  </div>
+</div>
+
+<div class="card">
+  <form method="get" action="/audit" class="filters audit-filters">
+    <input
+      name="search"
+      value="{{ search }}"
+      placeholder="Utilisateur, chemin, IP ou action..."
+    >
+
+    <select name="result">
+      <option value="">Tous les résultats</option>
+      <option value="allowed" {% if selected_result == "allowed" %}selected{% endif %}>
+        Autorisés
+      </option>
+      <option value="denied" {% if selected_result == "denied" %}selected{% endif %}>
+        Refusés
+      </option>
+    </select>
+
+    <label>
+      <span>Du</span>
+      <input type="date" name="date_from" value="{{ date_from }}">
+    </label>
+
+    <label>
+      <span>Au</span>
+      <input type="date" name="date_to" value="{{ date_to }}">
+    </label>
+
+    <button class="btn" type="submit">Filtrer</button>
+    <a class="btn secondary" href="/audit">Réinitialiser</a>
+  </form>
+</div>
+
+<div class="card table-wrap">
+  <table>
+    <tr>
+      <th>Date</th>
+      <th>Résultat</th>
+      <th>Utilisateur et action</th>
+    </tr>
+
+    {% for row in rows %}
+    <tr>
+      <td>{{ row.created_at|localtime("%d/%m/%Y %H:%M:%S") }}</td>
+      <td>
+        {% if row.level == "INFO" %}
+        <span class="badge online">Autorisé</span>
+        {% else %}
+        <span class="badge offline">Refusé</span>
+        {% endif %}
+      </td>
+      <td>{{ row.message }}</td>
+    </tr>
+    {% endfor %}
+
+    {% if not rows %}
+    <tr>
+      <td colspan="3" class="empty">
+        Aucun événement ne correspond aux filtres.
+      </td>
+    </tr>
+    {% endif %}
+  </table>
+</div>
+
+<script>
+function auditDateValue(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function applyAuditPeriod(days) {
+  const form = document.querySelector(".audit-filters");
+  const dateFrom = form.querySelector('[name="date_from"]');
+  const dateTo = form.querySelector('[name="date_to"]');
+  const today = new Date();
+
+  dateTo.value = auditDateValue(today);
+
+  const start = new Date(today);
+  start.setDate(today.getDate() - Math.max(days - 1, 0));
+  dateFrom.value = auditDateValue(start);
+
+  form.submit();
+}
+
+function clearAuditPeriod() {
+  const form = document.querySelector(".audit-filters");
+  form.querySelector('[name="date_from"]').value = "";
+  form.querySelector('[name="date_to"]').value = "";
+  form.submit();
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Modifier un client{% endblock %}
+{% block content %}
+<h1>Modifier un client</h1>
+<div class="card form-card">
+<form method="post" action="/clients/edit/{{ client.id }}">
+<label>Nom du client</label><input type="text" name="name" value="{{ client.name }}" required>
+<label>ID RustDesk</label><input type="text" name="rustdesk_id" value="{{ client.rustdesk_id }}" required>
+<label>Groupe</label><select name="group_name" required>{% for group in groups %}<option value="{{ group.name }}" {% if group.name == client.group_name %}selected{% endif %}>{{ group.name }}</option>{% endfor %}</select>
+<label>Notes</label><textarea name="notes" rows="5">{{ client.notes }}</textarea>
+<label class="checkbox"><input type="checkbox" name="active" {% if client.active %}checked{% endif %}> Client actif</label>
+<div class="actions"><button type="submit" class="btn">Enregistrer</button><a href="/clients" class="btn danger">Annuler</a></div>
+</form>
+</div>
+{% endblock %}

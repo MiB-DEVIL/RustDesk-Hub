@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Centre de notifications</h1>
+    <p class="muted">Alertes calculées à partir des heartbeats, de l’identité Agent, du journal et des tâches distantes.</p>
+  </div>
+  <a href="/notifications" class="btn secondary">Actualiser</a>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Total</div>
+    <div class="stat-value">{{ counts.total }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Critiques</div>
+    <div class="stat-value">{{ counts.critical }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Avertissements</div>
+    <div class="stat-value">{{ counts.warning }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="notification-list">
+    {% for alert in alerts %}
+    <div class="notification-item notification-{{ alert.severity }}">
+      <div class="notification-icon">
+        {% if alert.severity == "critical" %}⛔{% else %}⚠️{% endif %}
+      </div>
+      <div class="notification-body">
+        <div class="notification-title">{{ alert.title }}</div>
+        <div class="muted">{{ alert.message }}</div>
+        {% if alert.created_at %}
+        <div class="notification-date">{{ alert.created_at|localtime("%d/%m/%Y %H:%M:%S") }}</div>
+        {% endif %}
+      </div>
+      <div class="notification-actions">
+        {% if alert.task_uuid %}
+        <a href="/tasks/{{ alert.task_uuid }}" class="btn small">Voir la tâche</a>
+        {% endif %}
+
+        {% if alert.client_id %}
+        <a href="/machines/{{ alert.client_id }}" class="btn small secondary">Voir la machine</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+
+    {% if not alerts %}
+    <div class="empty-state">
+      <div class="empty-state-icon">✅</div>
+      <h2>Aucune alerte active</h2>
+      <p class="muted">Le parc ne présente actuellement aucune anomalie détectée.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<p class="muted">Dernier calcul : {{ generated_at|localtime("%d/%m/%Y %H:%M:%S") }} — heure locale</p>
+{% endblock %}

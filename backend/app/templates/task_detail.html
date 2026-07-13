@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block title %}Détail de la tâche{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>{{ action_label }}</h1>
+    <p class="muted">
+      {{ client.name }} — {{ action.action_uuid }}
+    </p>
+  </div>
+
+  <div class="task-detail-header-actions">
+    <a
+      class="btn"
+      href="/tasks/{{ action.action_uuid }}/print"
+      target="_blank"
+      rel="noopener"
+    >
+      🖨 Imprimer le rapport
+    </a>
+
+    <a
+      class="btn secondary"
+      href="/tasks/{{ action.action_uuid }}/export.json"
+    >
+      ⬇ Export JSON
+    </a>
+
+    <button
+      class="btn secondary"
+      type="button"
+      onclick="copyTaskUuid('{{ action.action_uuid }}')"
+    >
+      📋 Copier l’UUID
+    </button>
+
+    <a class="btn secondary" href="/tasks">Retour aux tâches</a>
+  </div>
+</div>
+
+
+{% if request.query_params.get('duplicated') %}
+<div class="card task-success">
+  ✅ Nouvelle tâche identique créée.
+</div>
+{% endif %}
+
+{% if request.query_params.get('error') == 'cannot_duplicate' %}
+<div class="card task-error-box">
+  ❌ Cette tâche ne peut pas être dupliquée.
+</div>
+{% endif %}
+
+{% if request.query_params.get('created') %}
+<div class="card task-success">✅ Action créée depuis la fiche machine.</div>
+{% endif %}
+
+{% if request.query_params.get('cancelled') %}
+<div class="card task-success">✅ Tâche annulée.</div>
+{% endif %}
+
+{% if request.query_params.get('retried') %}
+<div class="card task-success">✅ Nouvelle tentative créée.</div>
+{% endif %}
+
+{% if request.query_params.get('error') == 'cannot_cancel' %}
+<div class="card task-error-box">
+  ❌ Cette tâche ne peut plus être annulée.
+</div>
+{% endif %}
+
+{% if request.query_params.get('error') == 'cannot_retry' %}
+<div class="card task-error-box">
+  ❌ Cette tâche ne peut pas être relancée.
+</div>
+{% endif %}
+
+<div class="stats-grid task-detail-stats">
+  <div class="stat-card">
+    <div class="stat-label">État</div>
+    <div class="stat-value task-detail-value">
+      {% if action.status == 'pending' %}En attente
+      {% elif action.status == 'running' %}En cours
+      {% elif action.status == 'success' %}Succès
+      {% elif action.status == 'cancelled' %}Annulée
+      {% else %}Échec{% endif %}
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">Créée par</div>
+    <div class="stat-value task-detail-value">
+      {{ action.requested_by }}
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">Durée</div>
+    <div class="stat-value task-detail-value">
+      {% if duration_seconds is not none %}
+      {{ duration_seconds }} s
+      {% elif action.status == 'running' %}
+      En cours
+      {% else %}
+      -
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Chronologie</h2>
+
+  <div class="task-timeline">
+    <div>
+      <span>Créée</span>
+      <strong>{{ action.created_at|localtime("%d/%m/%Y %H:%M:%S") }}</strong>
+    </div>
+
+    <div>
+      <span>Démarrée</span>
+      <strong>
+        {% if action.started_at %}
+        {{ action.started_at|localtime("%d/%m/%Y %H:%M:%S") }}
+        {% else %}-{% endif %}
+      </strong>
+    </div>
+
+    <div>
+      <span>Terminée</span>
+      <strong>
+        {% if action.finished_at %}
+        {{ action.finished_at|localtime("%d/%m/%Y %H:%M:%S") }}
+        {% else %}-{% endif %}
+      </strong>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Résultat</h2>
+
+  <p>
+    <strong>Message :</strong>
+    {{ action.result_message or "-" }}
+  </p>
+
+  {% if action.error_message %}
+  <div class="task-error-detail">
+    <strong>Erreur :</strong>
+    <pre>{{ action.error_message }}</pre>
+  </div>
+  {% endif %}
+
+  <h3>Données retournées</h3>
+
+  {% if result_data %}
+  <dl class="result-data-grid">
+    {% for key, value in result_data.items() %}
+    <div>
+      <dt>{{ key }}</dt>
+      <dd>{{ value }}</dd>
+    </div>
+    {% endfor %}
+  </dl>
+  {% else %}
+  <p class="muted">Aucune donnée retournée.</p>
+  {% endif %}
+</div>
+
+<div class="card task-detail-actions">
+
+  <form
+    method="post"
+    action="/tasks/{{ action.action_uuid }}/duplicate"
+    onsubmit="return confirm('Créer une nouvelle tâche identique pour {{ client.name }} ?')"
+  >
+    <button class="btn" type="submit">
+      ➕ Relancer à l’identique
+    </button>
+  </form>
+
+  {% if action.status == 'pending' %}
+  <form
+    method="post"
+    action="/tasks/{{ action.action_uuid }}/cancel"
+    onsubmit="return confirm('Annuler cette tâche ?')"
+  >
+    <button class="btn danger" type="submit">Annuler la tâche</button>
+  </form>
+  {% endif %}
+
+  {% if action.status in ['failed', 'cancelled'] %}
+  <form
+    method="post"
+    action="/tasks/{{ action.action_uuid }}/retry"
+    onsubmit="return confirm('Créer une nouvelle tentative ?')"
+  >
+    <button class="btn" type="submit">Relancer la tâche</button>
+  </form>
+  {% endif %}
+</div>
+
+{% if action.status in ['pending', 'running'] %}
+<script>
+setInterval(function () {
+  if (!document.hidden) {
+    window.location.reload();
+  }
+}, 5000);
+</script>
+{% endif %}
+
+{% endblock %}

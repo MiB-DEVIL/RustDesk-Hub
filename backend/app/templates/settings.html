@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Paramètres{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Paramètres</h1>
+    <p class="muted">Configuration centrale d’OpenDesk Hub</p>
+  </div>
+</div>
+
+{% if request.query_params.get("saved") %}
+<div class="card"><p>✅ Paramètres enregistrés.</p></div>
+{% endif %}
+
+<div class="card form-card">
+<form method="post" action="/settings">
+
+<h2>Organisation et Agent</h2>
+<label>Nom de l’organisation</label>
+<input type="text" name="organization_name" value="{{ settings.get('organization_name','OpenDesk Hub') }}" required>
+
+<label>Intervalle Heartbeat (secondes)</label>
+<input type="number" name="heartbeat_interval" min="10" value="{{ settings.get('heartbeat_interval','30') }}" required>
+
+<label>Synchronisation du carnet (secondes)</label>
+<input type="number" name="address_book_interval" min="60" value="{{ settings.get('address_book_interval','300') }}" required>
+
+<label>Synchronisation de l’inventaire (secondes)</label>
+<input type="number" name="inventory_interval" min="300" value="{{ settings.get('inventory_interval','86400') }}" required>
+
+<label>Clé API des Agents</label>
+<input type="text" name="agent_api_key" value="{{ settings.get('agent_api_key','OpenDeskAgent2026') }}" required>
+
+<h2>Notifications</h2>
+<label>Délai avant alerte « machine sans réponse » (minutes)</label>
+<input type="number" name="notification_stale_minutes" min="1" value="{{ settings.get('notification_stale_minutes','10') }}" required>
+
+<label>Période de surveillance des erreurs du Journal (heures)</label>
+<input type="number" name="notification_error_hours" min="1" value="{{ settings.get('notification_error_hours','24') }}" required>
+
+<label class="checkbox"><input type="checkbox" name="inventory_enabled" {% if settings.get('inventory_enabled','true') == 'true' %}checked{% endif %}>Module Inventaire activé</label>
+<label class="checkbox"><input type="checkbox" name="address_book_enabled" {% if settings.get('address_book_enabled','true') == 'true' %}checked{% endif %}>Module Carnet partagé activé</label>
+<label class="checkbox"><input type="checkbox" name="debug_mode" {% if settings.get('debug_mode','false') == 'true' %}checked{% endif %}>Mode debug</label>
+
+<div class="actions"><button type="submit" class="btn">Enregistrer</button></div>
+</form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Groupes{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1>Groupes</h1><p class="muted">Organisation des clients</p></div></div>
+<div class="card form-card"><form method="post" action="/groups/add"><label>Nouveau groupe</label><div class="inline-form"><input type="text" name="name" placeholder="Nom du groupe" required><button type="submit" class="btn">Ajouter</button></div></form></div>
+<div class="card table-wrap"><table><tr><th>Nom</th><th>Clients</th><th>Action</th></tr>
+{% for group in groups %}<tr><td>{{ group.name }}</td><td>{{ stats[group.name] }}</td><td>{% if stats[group.name] == 0 %}<a href="/groups/delete/{{ group.id }}" class="btn small danger" onclick="return confirm('Supprimer ce groupe ?')">Supprimer</a>{% else %}<span class="badge used">Utilisé</span>{% endif %}</td></tr>{% endfor %}
+{% if not groups %}<tr><td colspan="3" class="empty">Aucun groupe.</td></tr>{% endif %}
+</table></div>
+{% endblock %}

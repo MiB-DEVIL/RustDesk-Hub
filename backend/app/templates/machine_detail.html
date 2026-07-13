@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% block title %}{{ client.name }}
+<div class="card">
+  <div class="quick-action-header">
+    <div><h2>Actions rapides</h2><p class="muted">Actions contrôlées exécutées par l’Agent OpenDesk.</p></div>
+    <a class="btn secondary" href="/tasks">Voir toutes les tâches</a>
+  </div>
+  <div class="quick-action-grid">
+    {% for key, icon, title, text in [
+      ('agent_status','🩺','État de l’Agent','Vérifie la version et le fonctionnement.'),
+      ('inventory_now','📊','Inventaire immédiat','Force une nouvelle collecte matérielle.'),
+      ('rustdesk_refresh','🔄','Actualiser RustDesk','Relit l’ID et la version RustDesk.'),
+      ('network_test','🌐','Test réseau','Teste la communication avec le Hub.')
+    ] %}
+    <form method="post" action="/machines/{{ client.id }}/quick-action">
+      <input type="hidden" name="action_type" value="{{ key }}">
+      <button class="quick-action-button" type="submit">
+        <span class="quick-action-icon">{{ icon }}</span><strong>{{ title }}</strong><small>{{ text }}</small>
+      </button>
+    </form>
+    {% endfor %}
+  </div>
+</div>
+
+
+<div class="card">
+  <div class="machine-maintenance-header">
+    <div>
+      <h2>Maintenance de la machine</h2>
+      <p class="muted">Lance un profil contrôlé directement sur {{ client.name }}.</p>
+    </div>
+    <a class="btn secondary" href="/tasks">Historique des tâches</a>
+  </div>
+
+  <div class="machine-maintenance-grid">
+    <form method="post" action="/tasks/create-maintenance"
+          onsubmit="return confirm('Lancer le diagnostic rapide sur {{ client.name }} ?')">
+      <input type="hidden" name="client_ids" value="{{ client.id }}">
+      <input type="hidden" name="profile_name" value="quick_diagnostic">
+      <button class="machine-maintenance-card" type="submit">
+        <span class="machine-maintenance-icon">🩺</span>
+        <strong>Diagnostic rapide</strong>
+        <small>Vérifie l’Agent puis teste la communication réseau.</small>
+        <em>2 étapes</em>
+      </button>
+    </form>
+
+    <form method="post" action="/tasks/create-maintenance"
+          onsubmit="return confirm('Lancer l’actualisation complète sur {{ client.name }} ?')">
+      <input type="hidden" name="client_ids" value="{{ client.id }}">
+      <input type="hidden" name="profile_name" value="full_refresh">
+      <button class="machine-maintenance-card" type="submit">
+        <span class="machine-maintenance-icon">🔄</span>
+        <strong>Actualisation complète</strong>
+        <small>Vérifie l’Agent, le réseau, RustDesk et l’inventaire.</small>
+        <em>4 étapes</em>
+      </button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>{{ client.name }}</h1>
+    <p class="muted">{{ client.hostname or "Hostname inconnu" }}</p>
+  </div>
+
+  <div class="actions">
+    {% if client.online %}
+    <span class="badge online">En ligne</span>
+    {% else %}
+    <span class="badge offline">Hors ligne</span>
+    {% endif %}
+
+    <a href="rustdesk://connection/new/{{ client.rustdesk_id }}" class="btn">🖥️ Ouvrir RustDesk</a>
+    <a href="/administration" class="btn secondary">🛠️ Administration</a>
+    <a href="/inventory/{{ client.id }}" class="btn secondary">📊 Inventaire</a>
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">ID RustDesk</div>
+    <div class="stat-value small-value">{{ client.rustdesk_id }}</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">Adresse IP</div>
+    <div class="stat-value small-value">{{ client.ip or "-" }}</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">Système</div>
+    <div class="stat-value small-value">
+      {% if inventory %}{{ inventory.os_version or client.os or "-" }}{% else %}{{ client.os or "-" }}{% endif %}
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">Dernier heartbeat</div>
+    <div class="stat-value small-value">
+      {% if client.last_seen %}{{ client.last_seen|localtime("%d/%m/%Y %H:%M:%S") }}{% else %}Jamais{% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Informations générales</h2>
+  <table>
+    <tr><th>Élément</th><th>Valeur</th></tr>
+    <tr><td>Nom</td><td>{{ client.name }}</td></tr>
+    <tr><td>Hostname</td><td>{{ client.hostname or "-" }}</td></tr>
+    <tr><td>Groupe</td><td>{{ client.group_name or "-" }}</td></tr>
+    <tr><td>Version RustDesk</td><td>{{ client.version or "-" }}</td></tr>
+    <tr><td>Notes</td><td>{{ client.notes or "-" }}</td></tr>
+
+    {% if inventory %}
+    <tr><td>Utilisateur</td><td>{{ inventory.username or "-" }}</td></tr>
+    <tr><td>CPU</td><td>{{ inventory.cpu or "-" }}</td></tr>
+    <tr><td>RAM</td><td>{% if inventory.ram_gb %}{{ inventory.ram_gb }} Go{% else %}-{% endif %}</td></tr>
+    <tr><td>Fabricant</td><td>{{ inventory.manufacturer or "-" }}</td></tr>
+    <tr><td>Modèle</td><td>{{ inventory.model or "-" }}</td></tr>
+    <tr><td>Numéro de série</td><td>{{ inventory.serial_number or "-" }}</td></tr>
+    <tr><td>Adresse MAC</td><td>{{ inventory.mac or "-" }}</td></tr>
+    {% endif %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>Activité récente</h2>
+  <table>
+    <tr><th>Date</th><th>Niveau</th><th>Type</th><th>Message</th></tr>
+
+    {% for row in logs %}
+    <tr>
+      <td>{{ row.created_at|localtime("%d/%m/%Y %H:%M:%S") }}</td>
+      <td>
+        <span class="badge {% if row.level == 'ERROR' %}offline{% elif row.level == 'WARNING' %}used{% else %}online{% endif %}">
+          {{ row.level }}
+        </span>
+      </td>
+      <td>{{ row.event_type }}</td>
+      <td>{{ row.message }}</td>
+    </tr>
+    {% endfor %}
+
+    {% if not logs %}
+    <tr><td colspan="4" class="empty">Aucune activité enregistrée.</td></tr>
+    {% endif %}
+  </table>
+</div>
+
+
+<div class="card">
+  <div class="quick-action-header">
+    <div><h2>Actions rapides</h2><p class="muted">Actions contrôlées exécutées par l’Agent OpenDesk.</p></div>
+    <a class="btn secondary" href="/tasks">Voir toutes les tâches</a>
+  </div>
+  <div class="quick-action-grid">
+    {% for key, icon, title, text in [
+      ('agent_status','🩺','État de l’Agent','Vérifie la version et le fonctionnement.'),
+      ('inventory_now','📊','Inventaire immédiat','Force une nouvelle collecte matérielle.'),
+      ('rustdesk_refresh','🔄','Actualiser RustDesk','Relit l’ID et la version RustDesk.'),
+      ('network_test','🌐','Test réseau','Teste la communication avec le Hub.')
+    ] %}
+    <form method="post" action="/machines/{{ client.id }}/quick-action">
+      <input type="hidden" name="action_type" value="{{ key }}">
+      <button class="quick-action-button" type="submit">
+        <span class="quick-action-icon">{{ icon }}</span><strong>{{ title }}</strong><small>{{ text }}</small>
+      </button>
+    </form>
+    {% endfor %}
+  </div>
+</div>
+
+
+<div class="card">
+  <div class="machine-maintenance-header">
+    <div>
+      <h2>Maintenance de la machine</h2>
+      <p class="muted">Lance un profil contrôlé directement sur {{ client.name }}.</p>
+    </div>
+    <a class="btn secondary" href="/tasks">Historique des tâches</a>
+  </div>
+
+  <div class="machine-maintenance-grid">
+    <form method="post" action="/tasks/create-maintenance"
+          onsubmit="return confirm('Lancer le diagnostic rapide sur {{ client.name }} ?')">
+      <input type="hidden" name="client_ids" value="{{ client.id }}">
+      <input type="hidden" name="profile_name" value="quick_diagnostic">
+      <button class="machine-maintenance-card" type="submit">
+        <span class="machine-maintenance-icon">🩺</span>
+        <strong>Diagnostic rapide</strong>
+        <small>Vérifie l’Agent puis teste la communication réseau.</small>
+        <em>2 étapes</em>
+      </button>
+    </form>
+
+    <form method="post" action="/tasks/create-maintenance"
+          onsubmit="return confirm('Lancer l’actualisation complète sur {{ client.name }} ?')">
+      <input type="hidden" name="client_ids" value="{{ client.id }}">
+      <input type="hidden" name="profile_name" value="full_refresh">
+      <button class="machine-maintenance-card" type="submit">
+        <span class="machine-maintenance-icon">🔄</span>
+        <strong>Actualisation complète</strong>
+        <small>Vérifie l’Agent, le réseau, RustDesk et l’inventaire.</small>
+        <em>4 étapes</em>
+      </button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

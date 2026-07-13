@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}
+Carnet partagé
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+<div>
+<h1>Carnet partagé</h1>
+<p class="muted">Référentiel central des machines RustDesk</p>
+</div>
+</div>
+
+<div class="card">
+<form method="get" action="/address-book" class="filters">
+<input type="text" name="search" placeholder="Nom, ID RustDesk, hostname ou groupe..." value="{{ search }}">
+<select name="group">
+<option value="">Tous les groupes</option>
+{% for group in groups %}
+<option value="{{ group.name }}" {% if selected_group == group.name %}selected{% endif %}>{{ group.name }}</option>
+{% endfor %}
+</select>
+<button type="submit" class="btn">Rechercher</button>
+<a href="/address-book" class="btn danger">Réinitialiser</a>
+</form>
+</div>
+
+<div class="card table-wrap">
+<table>
+<tr><th>État</th><th>Nom</th><th>ID RustDesk</th><th>Groupe</th><th>Hostname</th><th>OS</th><th>IP</th></tr>
+{% for client in clients %}
+<tr>
+<td>{% if client.online %}<span class="dot green"></span>{% else %}<span class="dot red"></span>{% endif %}</td>
+<td>{{ client.name }}</td><td>{{ client.rustdesk_id }}</td><td>{{ client.group_name }}</td><td>{{ client.hostname or "-" }}</td><td>{{ client.os or "-" }}</td><td>{{ client.ip or "-" }}</td>
+</tr>
+{% endfor %}
+{% if not clients %}<tr><td colspan="7" class="empty">Aucun contact disponible.</td></tr>{% endif %}
+</table>
+</div>
+
+<div class="card">
+<h2>API du carnet partagé</h2>
+<p class="muted">Les agents peuvent récupérer le carnet avec :</p>
+<pre>GET /api/address-book
+X-API-Key: RustDeskHubAddressBook2026</pre>
+</div>
+
+{% endblock %}

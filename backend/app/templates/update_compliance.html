@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Conformité Windows Update{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Conformité Windows Update</h1>
+    <p class="muted">
+      Évaluation basée sur la date du dernier correctif Windows détecté.
+    </p>
+  </div>
+</div>
+
+<div class="stats-grid compliance-stats-grid">
+  <div class="stat-card success-card">
+    <div class="stat-label">À jour</div>
+    <div class="stat-value">{{ compliant }}</div>
+  </div>
+  <div class="stat-card warning-card">
+    <div class="stat-label">À vérifier</div>
+    <div class="stat-value">{{ warning }}</div>
+  </div>
+  <div class="stat-card danger-card">
+    <div class="stat-label">Critiques</div>
+    <div class="stat-value">{{ critical }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Inconnus</div>
+    <div class="stat-value">{{ unknown }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Taux de conformité</div>
+    <div class="stat-value">{{ compliance_rate }} %</div>
+  </div>
+</div>
+
+<div class="card compliance-legend">
+  <div><span class="health-chip healthy">À jour</span><small>Dernier correctif inférieur à 60 jours</small></div>
+  <div><span class="health-chip warning">À vérifier</span><small>Entre 60 et 120 jours</small></div>
+  <div><span class="health-chip critical">Critique</span><small>Plus de 120 jours</small></div>
+  <div><span class="health-chip unknown">Inconnu</span><small>Aucune date exploitable</small></div>
+</div>
+
+<div class="card table-wrap">
+  <table>
+    <tr>
+      <th>Machine</th>
+      <th>Hostname</th>
+      <th>État Agent</th>
+      <th>Conformité</th>
+      <th>Dernier correctif</th>
+      <th>Dernier KB</th>
+      <th>Correctifs recensés</th>
+      <th></th>
+    </tr>
+
+    {% for row in rows %}
+    <tr>
+      <td><strong>{{ row.machine }}</strong></td>
+      <td>{{ row.hostname }}</td>
+      <td>
+        {% if row.online %}
+        <span class="badge online">En ligne</span>
+        {% else %}
+        <span class="badge offline">Hors ligne</span>
+        {% endif %}
+      </td>
+      <td>
+        <span class="health-chip {{ row.state }}">
+          {{ row.label }}
+        </span>
+      </td>
+      <td>
+        {% if row.latest_date %}
+        {{ row.latest_date.strftime("%d/%m/%Y") }}
+        {% else %}
+        -
+        {% endif %}
+      </td>
+      <td>{{ row.latest_kb or "-" }}</td>
+      <td>{{ row.hotfix_count }}</td>
+      <td>
+        <a class="btn secondary small" href="/inventory/{{ row.client_id }}">
+          Inventaire
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <p class="muted">
+    Cette vue indique la récence des correctifs détectés. Elle ne remplace
+    pas le contrôle Windows Update complet et ne garantit pas que toutes
+    les mises à jour disponibles sont installées.
+  </p>
+</div>
+
+{% endblock %}

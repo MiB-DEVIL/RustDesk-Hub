@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Mon profil{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Mon profil</h1>
+    <p class="muted">
+      Compte connecté : {{ request.session.get("user") }}
+    </p>
+  </div>
+
+  {% if request.session.get("is_admin") %}
+  <span class="badge online">Administrateur</span>
+  {% else %}
+  <span class="badge used">Lecture seule</span>
+  {% endif %}
+</div>
+
+{% set error = request.query_params.get("error") %}
+{% if error %}
+<div class="card task-error-box">
+  {% if error == "current" %}
+  Le mot de passe actuel est incorrect.
+  {% elif error == "length" %}
+  Le nouveau mot de passe doit contenir au moins 8 caractères.
+  {% elif error == "confirmation" %}
+  La confirmation ne correspond pas.
+  {% else %}
+  Modification impossible.
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="profile-grid">
+  <section class="card">
+    <h2>Changer mon mot de passe</h2>
+
+    <form method="post" action="/profile/password" class="stack-form profile-password-form">
+      <label>
+        <span>Mot de passe actuel</span>
+        <input
+          type="password"
+          name="current_password"
+          autocomplete="current-password"
+          required
+        >
+      </label>
+
+      <label>
+        <span>Nouveau mot de passe</span>
+        <input
+          type="password"
+          name="new_password"
+          minlength="8"
+          autocomplete="new-password"
+          required
+        >
+      </label>
+
+      <label>
+        <span>Confirmation</span>
+        <input
+          type="password"
+          name="confirmation"
+          minlength="8"
+          autocomplete="new-password"
+          required
+        >
+      </label>
+
+      <button class="btn" type="submit">
+        Modifier et me déconnecter
+      </button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Autorisations du compte</h2>
+
+    {% if request.session.get("is_admin") %}
+    <p>
+      Ce compte peut consulter et modifier l’ensemble du Hub,
+      lancer des actions et administrer les utilisateurs.
+    </p>
+    {% else %}
+    <p>
+      Ce compte peut consulter les machines, inventaires,
+      tâches, rapports et journaux.
+    </p>
+    <p class="muted">
+      Les créations, suppressions, réglages et actions distantes
+      sont bloqués côté serveur.
+    </p>
+    {% endif %}
+  </section>
+</div>
+
+{% endblock %}

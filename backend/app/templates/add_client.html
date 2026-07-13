@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Ajouter un client{% endblock %}
+{% block content %}
+<h1>Ajouter un client</h1>
+<div class="card form-card">
+<form method="post" action="/clients/add">
+<label>Nom du client</label><input type="text" name="name" required>
+<label>ID RustDesk</label><input type="text" name="rustdesk_id" required>
+<label>Groupe</label><select name="group_name" required>{% for group in groups %}<option value="{{ group.name }}">{{ group.name }}</option>{% endfor %}</select>
+<label>Notes</label><textarea name="notes" rows="5"></textarea>
+<div class="actions"><button type="submit" class="btn">Enregistrer</button><a href="/clients" class="btn danger">Annuler</a></div>
+</form>
+</div>
+{% endblock %}

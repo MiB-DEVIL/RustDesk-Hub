@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Clients{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Clients</h1>
+    <p class="muted">Gestion des machines OpenDesk</p>
+  </div>
+  <a href="/clients/add" class="btn">+ Nouveau client</a>
+</div>
+
+<div class="card">
+  <form method="get" action="/clients" class="filters">
+    <input type="text" name="search" placeholder="Recherche : nom, ID, hostname, IP..." value="{{ search }}">
+
+    <select name="group">
+      <option value="">Tous les groupes</option>
+      {% for group in groups %}
+      <option value="{{ group.name }}" {% if selected_group == group.name %}selected{% endif %}>
+        {{ group.name }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <button type="submit" class="btn">Rechercher</button>
+    <a href="/clients" class="btn danger">Réinitialiser</a>
+  </form>
+</div>
+
+<div class="card table-wrap">
+  <table>
+    <tr>
+      <th>État</th>
+      <th>Nom</th>
+      <th>ID RustDesk</th>
+      <th>Hostname</th>
+      <th>OS</th>
+      <th>IP</th>
+      <th>Groupe</th>
+      <th>Dernière connexion</th>
+      <th>Actions</th>
+    </tr>
+
+    {% for client in clients %}
+    <tr>
+      <td>{% if client.online %}<span class="dot green"></span>{% else %}<span class="dot red"></span>{% endif %}</td>
+      <td><a href="/machines/{{ client.id }}"><strong>{{ client.name }}</strong></a></td>
+      <td>{{ client.rustdesk_id }}</td>
+      <td>{{ client.hostname or "-" }}</td>
+      <td>{{ client.os or "-" }}</td>
+      <td>{{ client.ip or "-" }}</td>
+      <td>{{ client.group_name }}</td>
+      <td>{% if client.last_seen %}{{ client.last_seen|localtime("%d/%m/%Y %H:%M") }}{% else %}Jamais{% endif %}</td>
+      <td class="row-actions">
+        <a href="/machines/{{ client.id }}" class="btn small">Voir</a>
+        <a href="/clients/edit/{{ client.id }}" class="btn small secondary">Modifier</a>
+        <a href="/clients/delete/{{ client.id }}" class="btn small danger" onclick="return confirm('Supprimer ce client ?')">Supprimer</a>
+      </td>
+    </tr>
+    {% endfor %}
+
+    {% if not clients %}
+    <tr><td colspan="9" class="empty">Aucun client trouvé.</td></tr>
+    {% endif %}
+  </table>
+</div>
+
+{% endblock %}

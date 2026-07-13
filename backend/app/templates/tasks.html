@@ -1,0 +1,789 @@
+{% extends "base.html" %}
+{% block title %}Tâches{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Tâches</h1>
+    <p class="muted">Actions sécurisées individuelles ou multiples.</p>
+  </div>
+
+  <div class="task-page-actions">
+    <a class="btn secondary" href="/tasks-report">📊 Rapport</a>
+    <div class="live-task-indicator" id="live-task-indicator">
+      <span class="live-task-dot"></span>
+      <span id="live-task-label">Actualisation en direct</span>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="card agent-update-notice">
+  <div>
+    <strong>Agent Windows v0.9.9.0 inclus</strong>
+    <span class="muted">
+      Cette version ajoute les disques, Windows, DNS et les erreurs système récentes.
+    </span>
+  </div>
+  <span class="badge online">Mise à jour Agent requise</span>
+</div>
+
+<div class="stats-grid task-stats-grid">
+  <a class="stat-card task-stat-link" href="/tasks">
+    <div class="stat-label">Toutes</div>
+    <div class="stat-value"><span id="task-count-all">{{ counters.all }}</span></div>
+  </a>
+
+  <a class="stat-card task-stat-link" href="/tasks?status=pending">
+    <div class="stat-label">En attente</div>
+    <div class="stat-value"><span id="task-count-pending">{{ counters.pending }}</span></div>
+  </a>
+
+  <a class="stat-card task-stat-link" href="/tasks?status=running">
+    <div class="stat-label">En cours</div>
+    <div class="stat-value"><span id="task-count-running">{{ counters.running }}</span></div>
+  </a>
+
+  <a class="stat-card task-stat-link" href="/tasks?status=success">
+    <div class="stat-label">Succès</div>
+    <div class="stat-value"><span id="task-count-success">{{ counters.success }}</span></div>
+  </a>
+
+  <a class="stat-card task-stat-link" href="/tasks?status=failed">
+    <div class="stat-label">Échecs</div>
+    <div class="stat-value"><span id="task-count-failed">{{ counters.failed }}</span></div>
+  </a>
+
+  <a class="stat-card task-stat-link" href="/tasks?status=cancelled">
+    <div class="stat-label">Annulées</div>
+    <div class="stat-value"><span id="task-count-cancelled">{{ counters.cancelled }}</span></div>
+  </a>
+</div>
+
+
+
+{% if request.query_params.get('bulk_cancelled') is not none %}
+<div class="card task-success">
+  ✅ {{ request.query_params.get('bulk_cancelled') }} tâche(s) annulée(s).
+  {% if request.query_params.get('bulk_skipped') != '0' %}
+  {{ request.query_params.get('bulk_skipped') }} ignorée(s).
+  {% endif %}
+</div>
+{% endif %}
+
+{% if request.query_params.get('bulk_retried') is not none %}
+<div class="card task-success">
+  ✅ {{ request.query_params.get('bulk_retried') }} nouvelle(s) tentative(s) créée(s).
+  {% if request.query_params.get('bulk_skipped') != '0' %}
+  {{ request.query_params.get('bulk_skipped') }} ignorée(s).
+  {% endif %}
+</div>
+{% endif %}
+
+{% if request.query_params.get('bulk_error') == 'no_selection' %}
+<div class="card task-error-box">
+  ❌ Sélectionne au moins une tâche.
+</div>
+{% endif %}
+
+{% if request.query_params.get('maintenance_created') %}
+<div class="card task-success">
+  ✅ Profil lancé sur {{ request.query_params.get('maintenance_machines') }}
+  machine(s) : {{ request.query_params.get('maintenance_created') }} tâche(s) créée(s).
+</div>
+{% endif %}
+
+{% if request.query_params.get('maintenance_error') == 'no_selection' %}
+<div class="card task-error-box">❌ Sélectionne au moins une machine.</div>
+{% elif request.query_params.get('maintenance_error') == 'profile' %}
+<div class="card task-error-box">❌ Profil de maintenance inconnu.</div>
+{% endif %}
+
+{% if request.query_params.get('cleanup_done') is not none %}
+<div class="card task-success">
+  ✅ {{ request.query_params.get('cleanup_done') }} ancienne(s) tâche(s)
+  supprimée(s), conservation de {{ request.query_params.get('retention_days') }} jours.
+</div>
+{% endif %}
+
+{% if request.query_params.get('cleanup_error') %}
+<div class="card task-error-box">
+  ❌ Durée de conservation invalide.
+</div>
+{% endif %}
+
+{% if request.query_params.get('created') %}
+<div class="card task-success">✅ Action ajoutée.</div>
+{% endif %}
+{% if request.query_params.get('bulk_created') %}
+<div class="card task-success">
+  ✅ {{ request.query_params.get('bulk_created') }} tâche(s) ajoutée(s).
+</div>
+{% endif %}
+{% if request.query_params.get('error') == 'no_selection' %}
+<div class="card task-error-box">❌ Sélectionne au moins une machine.</div>
+{% elif request.query_params.get('error') == 'type' %}
+<div class="card task-error-box">❌ Type d’action non autorisé.</div>
+{% endif %}
+
+<div class="task-layout">
+  <div class="card">
+    <h2>Action individuelle</h2>
+    <form method="post" action="/tasks/create" class="task-single-form">
+      <label>Machine
+        <select name="client_id" required>
+          <option value="">Choisir une machine</option>
+          {% for client in clients %}
+          <option value="{{ client.id }}">
+            {{ client.name }} — {{ client.hostname or client.rustdesk_id }}
+          </option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label>Action
+        <select name="action_type" required>
+          {% for key, label in action_types.items() %}
+          <option value="{{ key }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <button class="btn" type="submit">Créer la tâche</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Actions multiples</h2>
+    <form method="post" action="/tasks/create-bulk" id="bulk-task-form">
+      <label>Action
+        <select name="action_type" required>
+          {% for key, label in action_types.items() %}
+          <option value="{{ key }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <div class="bulk-client-toolbar">
+        <label class="select-all-control">
+          <input type="checkbox" id="select-all-clients">
+          Tout sélectionner
+        </label>
+        <span class="muted" id="selected-clients-count">0 machine sélectionnée</span>
+      </div>
+
+      <div class="bulk-client-list">
+        {% for client in clients %}
+        <label class="bulk-client-item">
+          <input type="checkbox" name="client_ids" value="{{ client.id }}" class="bulk-client-checkbox">
+          <span>
+            <strong>{{ client.name }}</strong>
+            <small>{{ client.hostname or client.rustdesk_id }} · {% if client.online %}En ligne{% else %}Hors ligne{% endif %}</small>
+          </span>
+        </label>
+        {% endfor %}
+      </div>
+
+      <button class="btn" type="submit" onclick="return confirmBulkTask()">
+        Créer les tâches
+      </button>
+    </form>
+  </div>
+</div>
+
+
+<div class="card task-quick-periods">
+  <div>
+    <strong>Périodes rapides</strong>
+    <span class="muted">Applique immédiatement une période courante.</span>
+  </div>
+
+  <div class="task-quick-period-buttons">
+    <button class="btn secondary small" type="button" onclick="applyTaskPeriod(0)">
+      Aujourd’hui
+    </button>
+    <button class="btn secondary small" type="button" onclick="applyTaskPeriod(7)">
+      7 jours
+    </button>
+    <button class="btn secondary small" type="button" onclick="applyTaskPeriod(30)">
+      30 jours
+    </button>
+    <button class="btn secondary small" type="button" onclick="clearTaskPeriod()">
+      Toute la période
+    </button>
+  </div>
+
+  <div class="task-refresh-controls">
+    <label>
+      <input type="checkbox" id="task-auto-refresh" checked>
+      Actualisation automatique
+    </label>
+
+    <select id="task-refresh-interval">
+      <option value="5000">5 secondes</option>
+      <option value="10000">10 secondes</option>
+      <option value="30000">30 secondes</option>
+    </select>
+  </div>
+</div>
+
+<div class="card">
+  <form method="get" action="/tasks" class="filters task-filter-form task-search-form">
+    <input
+      type="text"
+      name="search"
+      value="{{ search }}"
+      placeholder="Machine, hostname, ID RustDesk, utilisateur..."
+    >
+
+    <select name="client_id">
+      <option value="0">Toutes les machines</option>
+      {% for client in clients %}
+      <option
+        value="{{ client.id }}"
+        {% if selected_client_id == client.id %}selected{% endif %}
+      >
+        {{ client.name }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <select name="action_type">
+      <option value="">Toutes les actions</option>
+      {% for key, label in action_types.items() %}
+      <option
+        value="{{ key }}"
+        {% if selected_action_type == key %}selected{% endif %}
+      >
+        {{ label }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <label class="task-date-filter">
+      <span>Du</span>
+      <input type="date" name="date_from" value="{{ date_from }}">
+    </label>
+
+    <label class="task-date-filter">
+      <span>Au</span>
+      <input type="date" name="date_to" value="{{ date_to }}">
+    </label>
+
+    <select name="per_page">
+      <option value="25" {% if per_page == 25 %}selected{% endif %}>25 par page</option>
+      <option value="50" {% if per_page == 50 %}selected{% endif %}>50 par page</option>
+      <option value="100" {% if per_page == 100 %}selected{% endif %}>100 par page</option>
+    </select>
+
+    <select name="status">
+      <option value="">Tous les états</option>
+      <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>En attente</option>
+      <option value="running" {% if selected_status == 'running' %}selected{% endif %}>En cours</option>
+      <option value="success" {% if selected_status == 'success' %}selected{% endif %}>Succès</option>
+      <option value="failed" {% if selected_status == 'failed' %}selected{% endif %}>Échec</option>
+      <option value="cancelled" {% if selected_status == 'cancelled' %}selected{% endif %}>Annulées</option>
+    </select>
+    <button class="btn secondary" type="submit">Filtrer</button>
+    <a class="btn secondary" href="/tasks">Réinitialiser</a>
+    <a
+      class="btn"
+      href="/tasks/export.csv?status={{ selected_status }}&search={{ search }}&action_type={{ selected_action_type }}&client_id={{ selected_client_id }}&date_from={{ date_from }}&date_to={{ date_to }}"
+    >
+      ⬇ Export CSV
+    </a>
+  </form>
+</div>
+
+
+<div class="card">
+  <h2>Profils de maintenance</h2>
+  <p class="muted">
+    Lance une suite d’actions contrôlées sur une ou plusieurs machines.
+  </p>
+
+  <form method="post" action="/tasks/create-maintenance" id="maintenance-form">
+    <div class="maintenance-profile-grid">
+      {% for key, profile in maintenance_profiles.items() %}
+      <label class="maintenance-profile-card">
+        <input
+          type="radio"
+          name="profile_name"
+          value="{{ key }}"
+          {% if loop.first %}checked{% endif %}
+        >
+        <span>
+          <strong>{{ profile.label }}</strong>
+          <small>{{ profile.actions|length }} étape(s)</small>
+        </span>
+      </label>
+      {% endfor %}
+    </div>
+
+    <div class="bulk-client-toolbar">
+      <label class="select-all-control">
+        <input type="checkbox" id="maintenance-select-all">
+        Tout sélectionner
+      </label>
+      <span class="muted" id="maintenance-count">0 machine sélectionnée</span>
+    </div>
+
+    <div class="bulk-client-list">
+      {% for client in clients %}
+      <label class="bulk-client-item">
+        <input
+          type="checkbox"
+          name="client_ids"
+          value="{{ client.id }}"
+          class="maintenance-client"
+        >
+        <span>
+          <strong>{{ client.name }}</strong>
+          <small>{{ client.hostname or client.rustdesk_id }}</small>
+        </span>
+      </label>
+      {% endfor %}
+    </div>
+
+    <button class="btn" type="submit" onclick="return confirmMaintenance()">
+      ▶ Lancer le profil
+    </button>
+  </form>
+</div>
+
+<div class="card task-maintenance-card">
+  <div>
+    <h2>Entretien de l’historique</h2>
+    <p class="muted">
+      Supprime uniquement les tâches terminées, échouées ou annulées
+      plus anciennes que la durée choisie. Les tâches en attente et en cours
+      ne sont jamais supprimées.
+    </p>
+  </div>
+
+  <form
+    method="post"
+    action="/tasks/cleanup"
+    class="task-cleanup-form"
+    onsubmit="return confirmTaskCleanup(this)"
+  >
+    <select name="retention_days" required>
+      <option value="30">Conserver 30 jours</option>
+      <option value="90" selected>Conserver 90 jours</option>
+      <option value="180">Conserver 180 jours</option>
+      <option value="365">Conserver 1 an</option>
+    </select>
+
+    <button class="btn danger" type="submit">
+      Nettoyer l’historique
+    </button>
+  </form>
+</div>
+
+<form method="post" id="bulk-task-actions-form">
+<div class="card bulk-task-action-bar">
+  <label class="select-all-control">
+    <input type="checkbox" id="select-all-task-rows">
+    Tout sélectionner
+  </label>
+
+  <span class="muted" id="selected-task-count">
+    0 tâche sélectionnée
+  </span>
+
+  <div class="bulk-task-action-buttons">
+    <button
+      class="btn danger"
+      type="submit"
+      formaction="/tasks/bulk-cancel"
+      onclick="return confirmBulkCancel()"
+    >
+      Annuler la sélection
+    </button>
+
+    <button
+      class="btn"
+      type="submit"
+      formaction="/tasks/bulk-retry"
+      onclick="return confirmBulkRetry()"
+    >
+      Relancer la sélection
+    </button>
+  </div>
+</div>
+
+<div class="card table-wrap">
+<div class="task-result-summary">
+  <strong>{{ total_filtered }}</strong> tâche(s) trouvée(s)
+  <span class="muted">
+    — page {{ page }} sur {{ total_pages }}
+  </span>
+  {% if search %}
+  <span class="muted">pour « {{ search }} »</span>
+  {% endif %}
+  {% if date_from or date_to %}
+  <span class="muted">
+    — période :
+    {{ date_from or "début" }} → {{ date_to or "aujourd’hui" }}
+  </span>
+  {% endif %}
+</div>
+<table>
+<tr><th>Sélection</th><th>Créée</th><th>Machine</th><th>Action</th><th>État</th><th>Utilisateur</th><th>Résultat</th><th>Détails</th></tr>
+{% for action, client in rows %}
+<tr data-task-uuid="{{ action.action_uuid }}">
+<td>
+  <input
+    type="checkbox"
+    name="action_uuids"
+    value="{{ action.action_uuid }}"
+    class="task-row-checkbox"
+    aria-label="Sélectionner la tâche {{ action.action_uuid }}"
+  >
+</td>
+<td>{{ action.created_at|localtime("%d/%m/%Y %H:%M:%S") }}</td>
+<td><a href="/machines/{{ client.id }}"><strong>{{ client.name }}</strong></a></td>
+<td>{{ action_types.get(action.action_type, action.action_type) }}</td>
+<td><span class="task-status task-{{ action.status }} task-live-status">
+{% if action.status == 'pending' %}En attente{% elif action.status == 'running' %}En cours{% elif action.status == 'success' %}Succès{% elif action.status == 'cancelled' %}Annulée{% else %}Échec{% endif %}
+</span></td>
+<td>{{ action.requested_by }}</td>
+<td class="task-live-result">{% if action.error_message %}<span class="task-error">{{ action.error_message }}</span>{% elif action.result_message %}{{ action.result_message }}{% else %}-{% endif %}</td>
+<td><a class="btn small secondary" href="/tasks/{{ action.action_uuid }}">Ouvrir</a></td>
+</tr>
+{% endfor %}
+{% if not rows %}<tr><td colspan="8" class="empty">Aucune tâche.</td></tr>{% endif %}
+</table>
+</div>
+
+{% if total_pages > 1 %}
+<nav class="task-pagination" aria-label="Pagination des tâches">
+  {% set base_query = "status=" ~ selected_status ~
+      "&search=" ~ search ~
+      "&action_type=" ~ selected_action_type ~
+      "&client_id=" ~ selected_client_id ~
+      "&date_from=" ~ date_from ~
+      "&date_to=" ~ date_to ~
+      "&per_page=" ~ per_page %}
+
+  {% if page > 1 %}
+  <a class="btn secondary" href="/tasks?{{ base_query }}&page={{ page - 1 }}">
+    ← Précédent
+  </a>
+  {% else %}
+  <span class="btn secondary disabled">← Précédent</span>
+  {% endif %}
+
+  <span class="task-pagination-info">
+    Page {{ page }} / {{ total_pages }}
+  </span>
+
+  {% if page < total_pages %}
+  <a class="btn secondary" href="/tasks?{{ base_query }}&page={{ page + 1 }}">
+    Suivant →
+  </a>
+  {% else %}
+  <span class="btn secondary disabled">Suivant →</span>
+  {% endif %}
+</nav>
+{% endif %}
+
+</form>
+
+<script>
+(function(){
+  const all=document.getElementById("select-all-clients");
+  const boxes=Array.from(document.querySelectorAll(".bulk-client-checkbox"));
+  const count=document.getElementById("selected-clients-count");
+  function update(){
+    const n=boxes.filter(x=>x.checked).length;
+    count.textContent=n+(n>1?" machines sélectionnées":" machine sélectionnée");
+    all.checked=boxes.length>0&&boxes.every(x=>x.checked);
+  }
+  all.addEventListener("change",()=>{boxes.forEach(x=>x.checked=all.checked);update();});
+  boxes.forEach(x=>x.addEventListener("change",update));
+  update();
+})();
+function confirmBulkTask(){
+  const n=document.querySelectorAll(".bulk-client-checkbox:checked").length;
+  if(!n){alert("Sélectionne au moins une machine.");return false;}
+  return confirm("Créer cette action pour "+n+" machine(s) ?");
+}
+
+(function(){
+  const all=document.getElementById("maintenance-select-all");
+  const boxes=Array.from(document.querySelectorAll(".maintenance-client"));
+  const count=document.getElementById("maintenance-count");
+  if(!all || !count){return;}
+  function update(){
+    const n=boxes.filter(x=>x.checked).length;
+    count.textContent=n+(n>1?" machines sélectionnées":" machine sélectionnée");
+    all.checked=boxes.length>0 && boxes.every(x=>x.checked);
+  }
+  all.addEventListener("change",function(){
+    boxes.forEach(x=>x.checked=all.checked);
+    update();
+  });
+  boxes.forEach(x=>x.addEventListener("change",update));
+  update();
+})();
+
+(function(){
+  const selectAll=document.getElementById("select-all-task-rows");
+  const boxes=Array.from(document.querySelectorAll(".task-row-checkbox"));
+  const count=document.getElementById("selected-task-count");
+
+  if(!selectAll || !count){return;}
+
+  function update(){
+    const selected=boxes.filter(x=>x.checked).length;
+    count.textContent=
+      selected+
+      (selected>1?" tâches sélectionnées":" tâche sélectionnée");
+
+    selectAll.checked=
+      boxes.length>0 &&
+      boxes.every(x=>x.checked);
+  }
+
+  selectAll.addEventListener("change",function(){
+    boxes.forEach(x=>x.checked=selectAll.checked);
+    update();
+  });
+
+  boxes.forEach(x=>x.addEventListener("change",update));
+  update();
+})();
+
+function selectedTaskCount(){
+  return document.querySelectorAll(".task-row-checkbox:checked").length;
+}
+
+function confirmBulkCancel(){
+  const count=selectedTaskCount();
+
+  if(count===0){
+    alert("Sélectionne au moins une tâche.");
+    return false;
+  }
+
+  return confirm(
+    "Annuler les tâches en attente parmi les "+
+    count+
+    " tâche(s) sélectionnée(s) ?"
+  );
+}
+
+function confirmBulkRetry(){
+  const count=selectedTaskCount();
+
+  if(count===0){
+    alert("Sélectionne au moins une tâche.");
+    return false;
+  }
+
+  return confirm(
+    "Créer une nouvelle tentative pour les tâches échouées ou annulées "+
+    "parmi les "+count+" tâche(s) sélectionnée(s) ?"
+  );
+}
+
+function confirmMaintenance(){
+  const n=document.querySelectorAll(".maintenance-client:checked").length;
+  if(n===0){
+    alert("Sélectionne au moins une machine.");
+    return false;
+  }
+  return confirm("Lancer le profil sur "+n+" machine(s) ?");
+}
+
+function confirmTaskCleanup(form){
+  const days=form.querySelector('[name="retention_days"]').value;
+  return confirm(
+    "Supprimer définitivement les tâches terminées de plus de " +
+    days +
+    " jours ? Pense à exporter le CSV avant si nécessaire."
+  );
+}
+
+const taskStatusLabels = {
+  pending: "En attente",
+  running: "En cours",
+  success: "Succès",
+  failed: "Échec",
+  cancelled: "Annulée"
+};
+
+function updateTaskCounters(counters) {
+  Object.keys(counters || {}).forEach(function (key) {
+    const element = document.getElementById("task-count-" + key);
+    if (element) {
+      element.textContent = counters[key];
+    }
+  });
+}
+
+function renderTaskResult(item) {
+  if (item.error) {
+    return '<span class="task-error"></span>';
+  }
+  return item.message || "-";
+}
+
+async function refreshTasksLive() {
+  const indicator = document.getElementById("live-task-indicator");
+  const label = document.getElementById("live-task-label");
+
+  try {
+    const response = await fetch("/api/tasks/recent", {
+      credentials: "same-origin",
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
+
+    const payload = await response.json();
+    updateTaskCounters(payload.counters);
+
+    (payload.items || []).forEach(function (item) {
+      const row = document.querySelector(
+        '[data-task-uuid="' + item.uuid + '"]'
+      );
+
+      if (!row) {
+        return;
+      }
+
+      const status = row.querySelector(".task-live-status");
+      const result = row.querySelector(".task-live-result");
+
+      if (status) {
+        status.className =
+          "task-status task-" + item.status + " task-live-status";
+        status.textContent =
+          taskStatusLabels[item.status] || item.status;
+      }
+
+      if (result) {
+        result.textContent = "";
+
+        if (item.error) {
+          const errorSpan = document.createElement("span");
+          errorSpan.className = "task-error";
+          errorSpan.textContent = item.error;
+          result.appendChild(errorSpan);
+        } else {
+          result.textContent = item.message || "-";
+        }
+      }
+    });
+
+    indicator.classList.remove("live-task-offline");
+    label.textContent =
+      "Actualisé à " +
+      new Date().toLocaleTimeString("fr-FR");
+  } catch (error) {
+    indicator.classList.add("live-task-offline");
+    label.textContent = "Actualisation interrompue";
+  }
+}
+
+
+let taskRefreshTimer = null;
+
+function readTaskRefreshSettings() {
+  const enabledControl = document.getElementById("task-auto-refresh");
+  const intervalControl = document.getElementById("task-refresh-interval");
+
+  const enabled = localStorage.getItem("opendeskTaskRefreshEnabled");
+  const interval = localStorage.getItem("opendeskTaskRefreshInterval");
+
+  if (enabled !== null) {
+    enabledControl.checked = enabled === "true";
+  }
+
+  if (interval && ["5000", "10000", "30000"].includes(interval)) {
+    intervalControl.value = interval;
+  }
+}
+
+function scheduleTaskRefresh() {
+  const enabledControl = document.getElementById("task-auto-refresh");
+  const intervalControl = document.getElementById("task-refresh-interval");
+
+  if (taskRefreshTimer) {
+    clearInterval(taskRefreshTimer);
+    taskRefreshTimer = null;
+  }
+
+  localStorage.setItem(
+    "opendeskTaskRefreshEnabled",
+    String(enabledControl.checked)
+  );
+  localStorage.setItem(
+    "opendeskTaskRefreshInterval",
+    intervalControl.value
+  );
+
+  if (!enabledControl.checked) {
+    const label = document.getElementById("live-task-label");
+    label.textContent = "Actualisation en pause";
+    return;
+  }
+
+  const delay = Number(intervalControl.value);
+
+  taskRefreshTimer = setInterval(function () {
+    if (!document.hidden) {
+      refreshTasksLive();
+    }
+  }, delay);
+
+  refreshTasksLive();
+}
+
+function taskDateValue(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function applyTaskPeriod(days) {
+  const form = document.querySelector(".task-search-form");
+  const dateFrom = form.querySelector('[name="date_from"]');
+  const dateTo = form.querySelector('[name="date_to"]');
+  const today = new Date();
+
+  dateTo.value = taskDateValue(today);
+
+  const start = new Date(today);
+  start.setDate(today.getDate() - Math.max(days - 1, 0));
+  dateFrom.value = taskDateValue(start);
+
+  form.submit();
+}
+
+function clearTaskPeriod() {
+  const form = document.querySelector(".task-search-form");
+  form.querySelector('[name="date_from"]').value = "";
+  form.querySelector('[name="date_to"]').value = "";
+  form.submit();
+}
+
+document.getElementById("task-auto-refresh").addEventListener(
+  "change",
+  scheduleTaskRefresh
+);
+
+document.getElementById("task-refresh-interval").addEventListener(
+  "change",
+  scheduleTaskRefresh
+);
+
+readTaskRefreshSettings();
+scheduleTaskRefresh();
+
+</script>
+
+{% endblock %}

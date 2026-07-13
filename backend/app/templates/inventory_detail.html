@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}Inventaire - {{ client.name }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+<div>
+<h1>{{ client.name }}</h1>
+<p class="muted">Fiche d'inventaire</p>
+</div>
+
+<a href="/inventory" class="btn secondary">
+Retour
+</a>
+</div>
+
+{% if inventory %}
+
+<div class="stats-grid">
+
+<div class="stat-card">
+<div class="stat-label">Hostname</div>
+<div class="stat-value small-value">{{ client.hostname or "-" }}</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-label">Utilisateur</div>
+<div class="stat-value small-value">{{ inventory.username or "-" }}</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-label">Système</div>
+<div class="stat-value small-value">{{ inventory.os_version or "-" }}</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-label">RAM</div>
+<div class="stat-value small-value">{{ inventory.ram_gb or "-" }} Go</div>
+</div>
+
+</div>
+
+<div class="card">
+<h2>Matériel</h2>
+
+<table>
+<tr><th>Élément</th><th>Valeur</th></tr>
+<tr><td>CPU</td><td>{{ inventory.cpu or "-" }}</td></tr>
+<tr><td>Fabricant</td><td>{{ inventory.manufacturer or "-" }}</td></tr>
+<tr><td>Modèle</td><td>{{ inventory.model or "-" }}</td></tr>
+<tr><td>Numéro de série</td><td>{{ inventory.serial_number or "-" }}</td></tr>
+<tr><td>Adresse MAC</td><td>{{ inventory.mac or "-" }}</td></tr>
+<tr><td>Uptime</td><td>{{ inventory.uptime_seconds }} secondes</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2>Disques</h2>
+
+<table>
+<tr><th>Lecteur</th><th>Taille</th><th>Libre</th></tr>
+
+{% for disk in disks %}
+<tr>
+<td>{{ disk.name }}</td>
+<td>{{ disk.size_gb }} Go</td>
+<td>{{ disk.free_gb }} Go</td>
+</tr>
+{% endfor %}
+
+{% if not disks %}
+<tr>
+<td colspan="3" class="empty">Aucune information disque.</td>
+</tr>
+{% endif %}
+
+</table>
+</div>
+
+
+{% if professional %}
+
+<div class="inventory-section-grid">
+  <section class="card">
+    <div class="panel-heading">
+      <div>
+        <p class="eyebrow">SÉCURITÉ WINDOWS</p>
+        <h2>Protection du poste</h2>
+      </div>
+      <span class="badge online">
+        {{ professional.updated_at|localtime("%d/%m/%Y %H:%M") }}
+      </span>
+    </div>
+
+    <div class="inventory-fact-grid">
+      <div>
+        <span>Antivirus</span>
+        <strong>{{ security.antivirus or "-" }}</strong>
+      </div>
+      <div>
+        <span>Protection temps réel</span>
+        <strong>{{ security.realtime_protection or "-" }}</strong>
+      </div>
+      <div>
+        <span>BitLocker</span>
+        <strong>{{ security.bitlocker or "-" }}</strong>
+      </div>
+      <div>
+        <span>TPM</span>
+        <strong>{{ security.tpm or "-" }}</strong>
+      </div>
+      <div>
+        <span>Secure Boot</span>
+        <strong>{{ security.secure_boot or "-" }}</strong>
+      </div>
+      <div>
+        <span>Pare-feu</span>
+        <strong>{{ security.firewall or "-" }}</strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <p class="eyebrow">BIOS ET FIRMWARE</p>
+    <h2>Plateforme</h2>
+
+    <div class="inventory-fact-grid">
+      <div>
+        <span>Fabricant BIOS</span>
+        <strong>{{ firmware.bios_manufacturer or "-" }}</strong>
+      </div>
+      <div>
+        <span>Version BIOS</span>
+        <strong>{{ firmware.bios_version or "-" }}</strong>
+      </div>
+      <div>
+        <span>Date BIOS</span>
+        <strong>{{ firmware.bios_date or "-" }}</strong>
+      </div>
+      <div>
+        <span>Mode firmware</span>
+        <strong>{{ firmware.firmware_type or "-" }}</strong>
+      </div>
+      <div>
+        <span>Carte mère</span>
+        <strong>{{ firmware.baseboard or "-" }}</strong>
+      </div>
+      <div>
+        <span>Windows Build</span>
+        <strong>{{ firmware.windows_build or "-" }}</strong>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="inventory-section-grid">
+  <section class="card">
+    <p class="eyebrow">PÉRIPHÉRIQUES</p>
+    <h2>Écrans et imprimantes</h2>
+
+    <div class="inventory-fact-grid">
+      <div>
+        <span>Écrans détectés</span>
+        <strong>{{ devices.monitors|length if devices.monitors else 0 }}</strong>
+      </div>
+      <div>
+        <span>Imprimantes</span>
+        <strong>{{ devices.printers|length if devices.printers else 0 }}</strong>
+      </div>
+    </div>
+
+    {% if devices.monitors %}
+    <h3>Écrans</h3>
+    <ul class="inventory-simple-list">
+      {% for item in devices.monitors %}
+      <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if devices.printers %}
+    <h3>Imprimantes</h3>
+    <ul class="inventory-simple-list">
+      {% for item in devices.printers %}
+      <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <p class="eyebrow">MISES À JOUR</p>
+    <h2>Derniers correctifs Windows</h2>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>KB</th>
+          <th>Description</th>
+          <th>Installation</th>
+        </tr>
+        {% for item in hotfixes[:15] %}
+        <tr>
+          <td>{{ item.hotfix_id or "-" }}</td>
+          <td>{{ item.description or "-" }}</td>
+          <td>{{ item.installed_on or "-" }}</td>
+        </tr>
+        {% endfor %}
+        {% if not hotfixes %}
+        <tr><td colspan="3" class="empty">Aucun correctif remonté.</td></tr>
+        {% endif %}
+      </table>
+    </div>
+  </section>
+</div>
+
+<div class="card">
+  <div class="panel-heading">
+    <div>
+      <p class="eyebrow">INVENTAIRE LOGICIEL</p>
+      <h2>Logiciels installés</h2>
+    </div>
+    <span class="badge used">{{ software|length }} logiciel(s)</span>
+  </div>
+
+  <input
+    class="inventory-software-search"
+    id="inventory-software-search"
+    type="search"
+    placeholder="Rechercher un logiciel, un éditeur ou une version..."
+  >
+
+  <div class="table-wrap">
+    <table id="inventory-software-table">
+      <tr>
+        <th>Logiciel</th>
+        <th>Version</th>
+        <th>Éditeur</th>
+        <th>Architecture</th>
+      </tr>
+      {% for item in software %}
+      <tr>
+        <td>{{ item.name or "-" }}</td>
+        <td>{{ item.version or "-" }}</td>
+        <td>{{ item.publisher or "-" }}</td>
+        <td>{{ item.architecture or "-" }}</td>
+      </tr>
+      {% endfor %}
+      {% if not software %}
+      <tr><td colspan="4" class="empty">Aucun logiciel remonté.</td></tr>
+      {% endif %}
+    </table>
+  </div>
+</div>
+
+<script>
+(function () {
+  const search = document.getElementById("inventory-software-search");
+  const table = document.getElementById("inventory-software-table");
+
+  if (!search || !table) {
+    return;
+  }
+
+  search.addEventListener("input", function () {
+    const value = search.value.toLowerCase().trim();
+
+    Array.from(table.querySelectorAll("tr")).slice(1)
+      .forEach(function (row) {
+        row.hidden = value && !row.textContent.toLowerCase().includes(value);
+      });
+  });
+})();
+</script>
+
+{% else %}
+
+<div class="card">
+  <h2>Inventaire professionnel</h2>
+  <p class="empty">
+    Le nouvel Agent v1.2.0 doit encore transmettre les logiciels,
+    correctifs, informations de sécurité et périphériques.
+  </p>
+</div>
+
+{% endif %}
+
+{% else %}
+
+<div class="card">
+<p class="empty">Aucun inventaire reçu pour ce poste.</p>
+</div>
+
+{% endif %}
+
+{% endblock %}

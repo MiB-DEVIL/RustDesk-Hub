@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Inventaire{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+<div>
+<h1>Inventaire</h1>
+<p class="muted">Informations matérielles et système des postes</p>
+</div>
+</div>
+
+<div class="card table-wrap">
+
+<table>
+
+<tr>
+<th>Nom</th>
+<th>Hostname</th>
+<th>Système</th>
+<th>CPU</th>
+<th>RAM</th>
+<th>Fabricant</th>
+<th>Modèle</th>
+<th>Mise à jour</th>
+<th>Action</th>
+</tr>
+
+{% for client, inventory in rows %}
+
+<tr>
+<td>{{ client.name }}</td>
+<td>{{ client.hostname or "-" }}</td>
+<td>{{ inventory.os_version if inventory else "-" }}</td>
+<td>{{ inventory.cpu if inventory else "-" }}</td>
+<td>
+{% if inventory and inventory.ram_gb %}
+{{ inventory.ram_gb }} Go
+{% else %}
+-
+{% endif %}
+</td>
+<td>{{ inventory.manufacturer if inventory else "-" }}</td>
+<td>{{ inventory.model if inventory else "-" }}</td>
+<td>
+{% if inventory and inventory.updated_at %}
+{{ inventory.updated_at|localtime("%d/%m/%Y %H:%M") }}
+{% else %}
+Jamais
+{% endif %}
+</td>
+<td>
+<a href="/inventory/{{ client.id }}" class="btn small">
+Voir
+</a>
+</td>
+</tr>
+
+{% endfor %}
+
+{% if not rows %}
+<tr>
+<td colspan="9" class="empty">Aucun poste.</td>
+</tr>
+{% endif %}
+
+</table>
+
+</div>
+
+{% endblock %}

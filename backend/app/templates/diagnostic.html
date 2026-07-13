@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Diagnostic{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Diagnostic du parc</h1>
+    <p class="muted">État des Agents, identités, inventaires et tâches.</p>
+  </div>
+  <div class="muted">
+    Généré le {{ generated_at|localtime("%d/%m/%Y à %H:%M:%S") }} UTC
+  </div>
+</div>
+
+<div class="stats-grid diagnostic-stats">
+  <div class="stat-card">
+    <div class="stat-label">Machines</div>
+    <div class="stat-value">{{ total_clients }}</div>
+  </div>
+  <div class="stat-card diagnostic-healthy">
+    <div class="stat-label">Saines</div>
+    <div class="stat-value">{{ healthy_count }}</div>
+  </div>
+  <div class="stat-card diagnostic-warning">
+    <div class="stat-label">À vérifier</div>
+    <div class="stat-value">{{ warning_count }}</div>
+  </div>
+  <div class="stat-card diagnostic-critical">
+    <div class="stat-label">Critiques</div>
+    <div class="stat-value">{{ critical_count }}</div>
+  </div>
+</div>
+
+<div class="stats-grid diagnostic-secondary-stats">
+  <div class="stat-card">
+    <div class="stat-label">Tâches en attente / cours</div>
+    <div class="stat-value">{{ pending_actions }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Tâches échouées sur 24 h</div>
+    <div class="stat-value">{{ failed_actions_24h }}</div>
+  </div>
+</div>
+
+<div class="card table-wrap">
+  <h2>État des machines</h2>
+  <table>
+    <tr>
+      <th>Machine</th>
+      <th>Santé</th>
+      <th>Heartbeat</th>
+      <th>Inventaire</th>
+      <th>Identité</th>
+      <th>Agent</th>
+      <th>Score</th>
+      <th>Action</th>
+    </tr>
+
+    {% for row in machine_rows %}
+    <tr>
+      <td>
+        <strong>{{ row.client.name }}</strong>
+        <div class="muted">{{ row.client.hostname or "-" }}</div>
+      </td>
+      <td>
+        <span class="health-badge {{ row.health }}">{{ row.health_label }}</span>
+      </td>
+      <td>
+        {% if row.heartbeat_ok %}
+        <span class="check-ok">✓ Récent</span>
+        {% else %}
+        <span class="check-ko">✕ Trop ancien</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if row.inventory_ok %}
+        <span class="check-ok">✓ Récent</span>
+        {% else %}
+        <span class="check-ko">✕ Absent ou ancien</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if row.identity_ok %}
+        <span class="check-ok">✓ UUID + RustDesk</span>
+        {% else %}
+        <span class="check-ko">✕ Incomplète</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if row.agent_version_ok %}
+        <span class="check-ok">{{ row.client.agent_version }}</span>
+        {% else %}
+        <span class="check-ko">Version inconnue</span>
+        {% endif %}
+      </td>
+      <td><strong>{{ row.score }} %</strong></td>
+      <td><a class="btn small" href="/machines/{{ row.client.id }}">Ouvrir</a></td>
+    </tr>
+    {% endfor %}
+
+    {% if not machine_rows %}
+    <tr><td colspan="8" class="empty">Aucune machine enregistrée.</td></tr>
+    {% endif %}
+  </table>
+</div>
+
+<div class="card table-wrap">
+  <h2>Erreurs et avertissements récents</h2>
+  <table>
+    <tr>
+      <th>Date</th>
+      <th>Niveau</th>
+      <th>Machine</th>
+      <th>Type</th>
+      <th>Message</th>
+    </tr>
+
+    {% for event in recent_errors %}
+    <tr>
+      <td>{{ event.created_at|localtime("%d/%m/%Y %H:%M:%S") }}</td>
+      <td>
+        <span class="badge {% if event.level == 'ERROR' %}offline{% else %}used{% endif %}">
+          {{ event.level }}
+        </span>
+      </td>
+      <td>{{ event.hostname or event.rustdesk_id or "-" }}</td>
+      <td>{{ event.event_type }}</td>
+      <td>{{ event.message }}</td>
+    </tr>
+    {% endfor %}
+
+    {% if not recent_errors %}
+    <tr>
+      <td colspan="5" class="empty">
+        Aucun avertissement ni erreur sur les dernières 24 heures.
+      </td>
+    </tr>
+    {% endif %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>Règles utilisées</h2>
+  <p class="muted">
+    Heartbeat récent : moins de 10 minutes. Inventaire récent : moins de 24 heures.
+    L’identité est valide avec un UUID permanent et un véritable ID RustDesk.
+  </p>
+</div>
+
+{% endblock %}
