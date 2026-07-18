@@ -15,7 +15,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer logger.Close()
-	logger.Info("OpenDesk Agent v1.2.0 démarré")
+	logger.Info(fmt.Sprintf("OpenDesk Agent v%s demarre - architecture %s - build %s", AgentVersion, AgentArchitecture(), AgentBuildDate()))
 	_ = SendRemoteLog(c, "INFO", "startup", "Agent démarré")
 	if rc, e := FetchRemoteConfig(c); e == nil {
 		if rc.Heartbeat > 0 {
